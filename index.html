@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FocusMithra</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1e4db7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FocusMithra">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<style>
+:root{
+  --bg:#08090d;--surface:#0f1117;--surface2:#161b25;--surface3:#1c2333;
+  --border:#222c3d;--accent:#1e4db7;--accent2:#2d5fd4;--accentl:#3b82f6;
+  --green:#22c55e;--red:#ef4444;--yellow:#eab308;--purple:#a855f7;
+  --text:#f0f4ff;--muted:#5a6a85;--muted2:#8898aa;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;}
+#screen-login.active{display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 30% 40%,#000d2e 0%,var(--bg) 65%);}
+#screen-app.active{display:flex;flex-direction:column;}
+
+/* ── LOGIN ── */
+.login-wrap{width:100%;max-width:380px;padding:20px;}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:22px;
+  padding:40px 32px 32px;box-shadow:0 32px 64px rgba(0,0,8,.7);position:relative;overflow:hidden;}
+.login-card::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at top,rgba(30,77,183,.07) 0%,transparent 70%);}
+.login-logo{width:180px;display:block;margin:0 auto 6px;position:relative;}
+.login-tagline{text-align:center;font-size:11px;color:var(--muted);margin-bottom:30px;
+  letter-spacing:.06em;text-transform:uppercase;font-weight:600;}
+.f-label{font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;
+  letter-spacing:.08em;margin-bottom:6px;display:block;}
+.f-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:13px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;
+  outline:none;transition:border-color .2s;margin-bottom:16px;}
+.f-input:focus{border-color:var(--accent);}
+.pass-wrap{position:relative;margin-bottom:20px;}
+.pass-wrap .f-input{margin-bottom:0;padding-right:46px;}
+.eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--muted);cursor:pointer;font-size:17px;padding:4px;line-height:1;}
+.eye-btn:hover{color:var(--muted2);}
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;
+  border-radius:11px;padding:14px;color:#fff;font-family:'Syne',sans-serif;font-size:15px;
+  font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.02em;}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(30,77,183,.4);}
+.btn-primary:active{transform:translateY(0);}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 16px;height:54px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:300;flex-shrink:0;}
+.topbar-logo{height:28px;width:auto;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.tb-icon-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:6px 9px;color:var(--muted2);cursor:pointer;font-size:16px;position:relative;
+  transition:all .2s;line-height:1;}
+.tb-icon-btn:hover{border-color:var(--accentl);color:var(--accentl);}
+.nb{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;border-radius:50%;
+  width:16px;height:16px;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.user-chip{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px;max-width:160px;}
+.user-chip-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;}
+.role-tag{border-radius:4px;padding:2px 6px;font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;}
+.rt-worker{background:rgba(59,130,246,.18);color:#60a5fa;}
+.rt-senior{background:rgba(30,77,183,.2);color:#818cf8;}
+.rt-admin{background:rgba(34,197,94,.15);color:var(--green);}
+.rt-unassigned{background:rgba(90,106,133,.15);color:var(--muted);}
+.logout-btn{background:none;border:1px solid var(--border);border-radius:7px;
+  padding:5px 10px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .2s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);
+  border-top:1px solid var(--border);display:flex;z-index:200;
+  padding-bottom:env(safe-area-inset-bottom,0);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:9px 4px;cursor:pointer;color:var(--muted);border:none;background:none;
+  font-family:'DM Sans',sans-serif;gap:2px;transition:color .2s;}
+.nav-item.active{color:var(--accentl);}
+.nav-icon{font-size:20px;line-height:1;}
+.nav-label{font-size:10px;font-weight:600;letter-spacing:.04em;}
+
+/* ── PAGES ── */
+.page{display:none;padding:16px;padding-bottom:86px;max-width:680px;margin:0 auto;width:100%;}
+.page.active{display:block;}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:13px;
+  padding:16px;position:relative;overflow:hidden;}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:13px 13px 0 0;}
+.sc-o::after{background:var(--accent);}.sc-y::after{background:var(--yellow);}
+.sc-b::after{background:var(--accentl);}.sc-g::after{background:var(--green);}
+.stat-num{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;line-height:1;}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:3px;font-weight:500;}
+
+/* ── REQUEST BUTTON ── */
+.req-section{background:var(--surface);border:1px solid var(--border);border-radius:15px;
+  padding:18px;margin-bottom:18px;}
+.sec-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px;}
+.sec-sub{font-size:12px;color:var(--muted);margin-bottom:14px;}
+.big-req-btn{width:100%;background:linear-gradient(135deg,rgba(30,77,183,.15),rgba(45,95,212,.07));
+  border:2px dashed var(--accent);border-radius:13px;padding:22px;color:var(--accentl);
+  font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;
+  transition:all .25s;display:flex;align-items:center;justify-content:center;gap:12px;}
+.big-req-btn:hover{background:linear-gradient(135deg,rgba(30,77,183,.25),rgba(45,95,212,.15));transform:scale(1.01);}
+.pulse{width:9px;height:9px;background:var(--accentl);border-radius:50%;animation:pulse 1.8s infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.6);opacity:.4;}}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:3px;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:3px;margin-bottom:13px;width:fit-content;}
+.tab{padding:6px 13px;border-radius:7px;font-size:11px;font-weight:500;cursor:pointer;
+  color:var(--muted);transition:all .2s;border:none;background:none;font-family:'DM Sans',sans-serif;}
+.tab.active{background:var(--surface2);color:var(--text);font-weight:600;}
+
+/* ── REQUEST CARDS ── */
+.req-list{display:flex;flex-direction:column;gap:10px;}
+.req-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.req-card-img{width:100%;height:160px;object-fit:cover;display:block;cursor:pointer;}
+.req-body{padding:14px 16px;}
+.req-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:6px;}
+.req-meta{font-size:11px;color:var(--muted);display:flex;gap:9px;flex-wrap:wrap;margin-bottom:8px;}
+.req-note{font-size:12px;color:var(--muted2);font-style:italic;margin-bottom:8px;
+  padding:7px 10px;background:var(--surface2);border-radius:7px;}
+.req-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;}
+.req-badges{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+.reminder-chip{background:rgba(30,77,183,.12);border:1px solid rgba(30,77,183,.25);
+  border-radius:20px;padding:2px 8px;font-size:10px;color:var(--accentl);}
+.alarm-chip{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);
+  border-radius:20px;padding:2px 8px;font-size:10px;color:var(--red);
+  display:flex;align-items:center;gap:3px;}
+.alarm-chip.on{animation:alarm-pulse 2s infinite;}
+@keyframes alarm-pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.req-actions-row{display:flex;gap:6px;flex-wrap:wrap;}
+
+/* BADGES */
+.badge{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
+.b-pending{background:rgba(234,179,8,.15);color:var(--yellow);}
+.b-accepted{background:rgba(30,77,183,.15);color:#818cf8;}
+.b-completed{background:rgba(34,197,94,.15);color:var(--green);}
+.b-low{background:rgba(96,165,250,.1);color:#60a5fa;}
+.b-medium{background:rgba(234,179,8,.1);color:var(--yellow);}
+.b-high{background:rgba(239,68,68,.12);color:var(--red);}
+
+/* ACTION BUTTONS */
+.act-btn{background:var(--surface2);border:1px solid var(--border);border-radius:7px;
+  padding:5px 11px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;
+  cursor:pointer;transition:all .2s;white-space:nowrap;color:var(--muted2);}
+.act-btn.blue{border-color:rgba(59,130,246,.3);color:var(--accentl);background:rgba(59,130,246,.08);}
+.act-btn.blue:hover{background:rgba(59,130,246,.16);}
+.act-btn.green{border-color:rgba(34,197,94,.3);color:var(--green);background:rgba(34,197,94,.08);}
+.act-btn.green:hover{background:rgba(34,197,94,.16);}
+.act-btn.red{border-color:rgba(239,68,68,.3);color:var(--red);background:rgba(239,68,68,.08);}
+.act-btn.red:hover{background:rgba(239,68,68,.16);}
+.act-btn.alarm{border-color:rgba(239,68,68,.4);color:var(--red);background:rgba(239,68,68,.1);}
+.act-btn.alarm-off{border-color:rgba(90,106,133,.3);color:var(--muted);}
+
+/* EMPTY */
+.empty{text-align:center;padding:46px 20px;color:var(--muted);}
+.empty-icon{font-size:36px;margin-bottom:10px;}
+.empty-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--muted2);margin-bottom:4px;}
+.empty-desc{font-size:12px;}
+
+/* ADMIN PAGE */
+.admin-card{background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:18px;margin-bottom:16px;}
+.add-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.user-list-a{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+.user-row-a{background:var(--surface2);border-radius:10px;padding:12px 14px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.u-info{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;}
+.u-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.u-meta{font-size:11px;color:var(--muted);display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+.u-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+.role-sel{background:var(--surface);border:1px solid var(--border);border-radius:7px;
+  padding:5px 8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:11px;
+  outline:none;cursor:pointer;-webkit-appearance:none;}
+.role-sel:focus{border-color:var(--accent);}
+.del-btn{background:none;border:1px solid var(--border);border-radius:7px;
+  padding:5px 9px;color:var(--muted);font-size:12px;cursor:pointer;transition:all .2s;}
+.del-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* NOTIF PAGE */
+.notif-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:13px 15px;display:grid;grid-template-columns:30px 1fr;gap:10px;margin-bottom:8px;}
+.n-dot{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.n-text{font-size:13px;line-height:1.4;}
+.n-time{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(5px);
+  z-index:1000;display:none;align-items:flex-end;justify-content:center;padding:0;}
+.overlay.show{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px 20px 0 0;
+  padding:24px 22px 32px;width:100%;max-width:500px;max-height:92vh;overflow-y:auto;
+  box-shadow:0 -20px 60px rgba(0,0,0,.5);animation:slideUp .3s ease;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:3px;}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px;}
+.f-group{margin-bottom:14px;}
+.f-select,.f-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);
+  border-radius:10px;padding:11px 13px;color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none;}
+.f-select:focus,.f-textarea:focus{border-color:var(--accent);}
+.f-textarea{resize:vertical;min-height:66px;}
+.priority-row{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.p-opt{background:var(--surface2);border:2px solid var(--border);border-radius:8px;
+  padding:9px 5px;text-align:center;font-size:11px;font-weight:700;cursor:pointer;
+  transition:all .2s;color:var(--muted2);}
+.p-opt.sel-low{border-color:#60a5fa;color:#60a5fa;background:rgba(96,165,250,.1);}
+.p-opt.sel-medium{border-color:var(--yellow);color:var(--yellow);background:rgba(234,179,8,.1);}
+.p-opt.sel-high{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.1);}
+.freq-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;}
+.freq-unit{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:11px 12px;color:var(--muted2);font-size:12px;white-space:nowrap;}
+.modal-actions{display:flex;gap:8px;margin-top:18px;}
+.btn-cancel{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:12px;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;}
+.btn-submit{flex:2;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;
+  border-radius:10px;padding:12px;color:#fff;font-family:'Syne',sans-serif;font-size:14px;
+  font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-submit:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(30,77,183,.35);}
+
+/* ALARM PANEL */
+.alarm-panel{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:4px;}
+.alarm-panel-title{font-size:12px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.alarm-toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.alarm-toggle-label{font-size:13px;font-weight:500;}
+.alarm-toggle-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.toggle-wrap{position:relative;width:42px;height:23px;flex-shrink:0;}
+.toggle-wrap input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--surface3);
+  border:1px solid var(--border);border-radius:23px;transition:.3s;}
+.toggle-slider:before{content:'';position:absolute;height:15px;width:15px;left:3px;bottom:3px;
+  background:var(--muted);border-radius:50%;transition:.3s;}
+.toggle-wrap input:checked+.toggle-slider{background:rgba(239,68,68,.2);border-color:var(--red);}
+.toggle-wrap input:checked+.toggle-slider:before{transform:translateX(19px);background:var(--red);}
+.sound-options{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
+.sound-opt{background:var(--surface3);border:2px solid var(--border);border-radius:8px;
+  padding:8px 5px;text-align:center;font-size:11px;font-weight:600;cursor:pointer;
+  transition:all .2s;color:var(--muted2);}
+.sound-opt.active{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.1);}
+.sound-opt-icon{font-size:16px;display:block;margin-bottom:3px;}
+
+/* IMAGE UPLOAD */
+.img-upload-area{width:100%;background:var(--surface2);border:2px dashed var(--border);
+  border-radius:12px;min-height:100px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.img-upload-area:hover{border-color:var(--accent);}
+.img-upload-area.has-img{border-style:solid;border-color:var(--accent);min-height:0;}
+.img-ph{text-align:center;pointer-events:none;}
+.img-ph-icon{font-size:24px;margin-bottom:4px;}
+.img-ph-title{font-size:13px;font-weight:600;color:var(--muted2);}
+.img-ph-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.img-preview-el{width:100%;max-height:190px;object-fit:cover;display:block;border-radius:10px;}
+.img-clear-btn{position:absolute;top:7px;right:7px;background:rgba(0,0,0,.65);border:none;
+  border-radius:6px;padding:4px 8px;color:#fff;font-size:11px;cursor:pointer;z-index:2;}
+
+/* CAPTCHA */
+.captcha-box{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;text-align:center;
+  letter-spacing:9px;color:var(--accentl);background:var(--surface2);border:2px dashed var(--border);
+  border-radius:12px;padding:16px;margin:12px 0;user-select:none;position:relative;overflow:hidden;}
+.captcha-noise{position:absolute;inset:0;background:repeating-linear-gradient(47deg,transparent,transparent 2px,rgba(30,77,183,.03) 2px,rgba(30,77,183,.03) 4px);}
+.captcha-text{position:relative;z-index:1;}
+
+/* ALARM RINGING OVERLAY */
+.alarm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:5000;
+  display:none;flex-direction:column;align-items:center;justify-content:center;padding:30px;}
+.alarm-overlay.ringing{display:flex;}
+.alarm-ring-icon{font-size:64px;animation:ring 0.5s infinite alternate;}
+@keyframes ring{from{transform:rotate(-15deg) scale(1);}to{transform:rotate(15deg) scale(1.1);}}
+.alarm-ring-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;
+  margin-top:16px;margin-bottom:6px;text-align:center;}
+.alarm-ring-sub{font-size:14px;color:var(--muted2);text-align:center;margin-bottom:28px;
+  max-width:280px;line-height:1.5;}
+.alarm-stop-btn{background:var(--red);border:none;border-radius:14px;padding:16px 40px;
+  color:#fff;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;
+  box-shadow:0 0 30px rgba(239,68,68,.5);animation:pulse-btn 1s infinite;}
+@keyframes pulse-btn{0%,100%{box-shadow:0 0 20px rgba(239,68,68,.4);}50%{box-shadow:0 0 40px rgba(239,68,68,.8);}}
+
+/* PUSH BANNER */
+.push-banner{background:linear-gradient(135deg,rgba(30,77,183,.12),rgba(45,95,212,.05));
+  border:1px solid rgba(30,77,183,.3);border-radius:11px;padding:12px 14px;
+  display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:14px;}
+.push-banner-text{font-size:12px;color:var(--muted2);flex:1;line-height:1.45;}
+.push-banner-text b{color:var(--accentl);}
+.pba{display:flex;gap:6px;flex-shrink:0;}
+.btn-allow{background:var(--accent);border:none;border-radius:7px;padding:7px 13px;color:#fff;
+  font-family:'Syne',sans-serif;font-size:11px;font-weight:700;cursor:pointer;}
+.btn-dismiss{background:var(--surface2);border:1px solid var(--border);border-radius:7px;
+  padding:7px 10px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;}
+
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:2000;
+  display:none;align-items:center;justify-content:center;cursor:zoom-out;}
+.lightbox.show{display:flex;}
+.lb-img{max-width:95vw;max-height:90vh;border-radius:10px;object-fit:contain;}
+.lb-close{position:absolute;top:14px;right:16px;font-size:20px;color:#fff;cursor:pointer;
+  background:rgba(0,0,0,.5);border:none;border-radius:50%;width:36px;height:36px;
+  display:flex;align-items:center;justify-content:center;}
+
+/* PENDING */
+.pending-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:55vh;text-align:center;padding:40px 20px;}
+.pending-spin{font-size:46px;animation:spin 3s linear infinite;}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+
+/* TOAST */
+#toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:10px 16px;font-size:13px;font-weight:500;box-shadow:0 8px 28px rgba(0,0,0,.4);
+  z-index:9999;transition:transform .3s;white-space:nowrap;pointer-events:none;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+
+/* CONFIG ERROR */
+.config-error{position:fixed;inset:0;background:#08090d;z-index:99999;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;}
+.config-error h2{font-family:'Syne',sans-serif;font-size:20px;color:var(--red);margin-bottom:12px;}
+.config-error p{font-size:13px;color:var(--muted2);line-height:1.7;max-width:360px;}
+.config-error code{background:var(--surface2);padding:2px 7px;border-radius:5px;
+  font-family:monospace;color:var(--accentl);font-size:12px;}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+@media(max-width:480px){
+  .login-card{padding:30px 20px 28px;}
+  .add-row{grid-template-columns:1fr;}
+  .modal{border-radius:18px 18px 0 0;}
+  .user-row-a{flex-direction:column;align-items:flex-start;}
+  .u-actions{width:100%;justify-content:flex-end;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="screen-login" class="screen active">
+  <div class="login-wrap">
+    <div class="login-card">
+      <img src="/logo.png" alt="FocusMithra" class="login-logo" onerror="this.style.display='none'" />
+      <div class="login-tagline">FocusMithra · Stock Request System</div>
+      <label class="f-label">Name</label>
+      <input class="f-input" id="ln" placeholder="Your full name" autocomplete="name" />
+      <label class="f-label">Password</label>
+      <div class="pass-wrap">
+        <input class="f-input" id="lp" type="password" placeholder="Your password" autocomplete="current-password" />
+        <button class="eye-btn" id="eye-btn" onclick="togglePass()">👁</button>
+      </div>
+      <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="screen-app" class="screen">
+  <div class="topbar">
+    <img src="/logo.png" alt="FocusMithra" class="topbar-logo" onerror="this.style.display='none'" />
+    <div class="topbar-right">
+      <button class="tb-icon-btn" onclick="openPage('notifications')">
+        🔔<div class="nb" id="notif-badge" style="display:none">0</div>
+      </button>
+      <div class="user-chip">
+        <span class="user-chip-name" id="tb-name">—</span>
+        <span class="role-tag" id="tb-role">—</span>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Exit</button>
+    </div>
+  </div>
+
+  <!-- Home -->
+  <div id="page-home" class="page active">
+    <div id="push-banner-area"></div>
+    <div class="stats-grid" id="stats-grid"></div>
+    <div id="worker-btn-area"></div>
+    <div class="tabs" id="tabs-row" style="display:none">
+      <button class="tab active" onclick="filterTab('all',this)">All</button>
+      <button class="tab" onclick="filterTab('pending',this)">Pending</button>
+      <button class="tab" onclick="filterTab('accepted',this)">Accepted</button>
+      <button class="tab" onclick="filterTab('completed',this)">Done</button>
+    </div>
+    <div class="req-list" id="req-list"></div>
+  </div>
+
+  <!-- Notifications -->
+  <div id="page-notifications" class="page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="font-family:Syne,sans-serif;font-size:17px;font-weight:700;">Notifications</div>
+      <button class="act-btn" onclick="clearNotifs()">Clear all</button>
+    </div>
+    <div id="notif-list"></div>
+  </div>
+
+  <!-- Admin -->
+  <div id="page-admin" class="page">
+    <div class="admin-card">
+      <div class="sec-title">➕ Add New Member</div>
+      <div class="sec-sub">Create login for a new employee.</div>
+      <div class="add-row">
+        <div><label class="f-label">Full Name</label>
+          <input class="f-input" id="am-name" placeholder="Employee name" style="margin-bottom:0" /></div>
+        <div><label class="f-label">Password</label>
+          <input class="f-input" id="am-pass" placeholder="Set password" style="margin-bottom:0" /></div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label class="f-label">Role</label>
+        <select class="f-select" id="am-role">
+          <option value="worker">👷 Worker — raises stock requests</option>
+          <option value="senior">🏆 Senior Incharge — receives & completes</option>
+          <option value="admin">⚙️ Admin — full control</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="addMember()">Add Member →</button>
+    </div>
+    <div class="admin-card">
+      <div class="sec-title">👥 All Members</div>
+      <div class="sec-sub">Change roles or remove members anytime.</div>
+      <div class="user-list-a" id="admin-user-list"></div>
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <button class="nav-item active" id="nav-home" onclick="openPage('home')">
+      <span class="nav-icon">🏠</span><span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" id="nav-notifications" onclick="openPage('notifications')">
+      <span class="nav-icon">🔔</span><span class="nav-label">Alerts</span>
+    </button>
+    <button class="nav-item" id="nav-admin" onclick="openPage('admin')" style="display:none">
+      <span class="nav-icon">⚙️</span><span class="nav-label">Admin</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ REQUEST MODAL ═══ -->
+<div class="overlay" id="modal-request">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📦 Request for Order</div>
+    <div class="modal-sub">Add a photo so seniors know exactly what to order.</div>
+    <div class="f-group">
+      <label class="f-label">Item / Stock Name *</label>
+      <input class="f-input" id="ri-item" placeholder="e.g. A4 Paper, Printer Ink…" style="margin-bottom:0" />
+    </div>
+    <div class="f-group">
+      <label class="f-label">📷 Photo (optional)</label>
+      <div class="img-upload-area" id="img-upload-area" onclick="triggerFileInput()">
+        <input type="file" accept="image/*" capture="environment" id="img-file-input" style="display:none" onchange="handleImg(this)" />
+        <div id="img-ph" class="img-ph">
+          <div class="img-ph-icon">📷</div>
+          <div class="img-ph-title">Tap to add photo</div>
+          <div class="img-ph-sub">Camera or gallery</div>
+        </div>
+        <img id="img-preview-el" class="img-preview-el" style="display:none" alt="preview" />
+        <button class="img-clear-btn" id="img-clear-btn" style="display:none" onclick="clearImg(event)">✕</button>
+      </div>
+    </div>
+    <div class="f-group">
+      <label class="f-label">Notes / Quantity</label>
+      <textarea class="f-textarea" id="ri-notes" placeholder="Extra details, how many needed…"></textarea>
+    </div>
+    <div class="f-group">
+      <label class="f-label">Assign to Senior *</label>
+      <select class="f-select" id="ri-senior"></select>
+    </div>
+    <div class="f-group">
+      <label class="f-label">Priority</label>
+      <div class="priority-row">
+        <div class="p-opt sel-low" data-p="low" onclick="selP(this)">🔵 Low</div>
+        <div class="p-opt" data-p="medium" onclick="selP(this)">🟡 Medium</div>
+        <div class="p-opt" data-p="high" onclick="selP(this)">🔴 High</div>
+      </div>
+    </div>
+    <div class="f-group">
+      <label class="f-label">Reminder Frequency</label>
+      <div class="freq-row">
+        <input class="f-input" id="ri-freq" type="number" min="1" max="24" value="1" style="margin-bottom:0" />
+        <div class="freq-unit">hour(s)</div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-request')">Cancel</button>
+      <button class="btn-submit" onclick="submitRequest()">Send Request →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ALARM SETTINGS MODAL ═══ -->
+<div class="overlay" id="modal-alarm">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔔 Alarm Settings</div>
+    <div class="modal-sub" id="alarm-modal-sub">Set up a sound alarm for this request.</div>
+    <div class="alarm-panel">
+      <div class="alarm-panel-title">🔊 Sound Alarm</div>
+      <div class="alarm-toggle-row">
+        <div>
+          <div class="alarm-toggle-label">Enable Alarm</div>
+          <div class="alarm-toggle-sub">Plays sound at intervals until task is done</div>
+        </div>
+        <label class="toggle-wrap">
+          <input type="checkbox" id="alarm-enabled-toggle" onchange="onAlarmToggle()" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div id="alarm-options-wrap" style="display:none">
+        <div class="f-label" style="margin-bottom:8px">Alarm Sound</div>
+        <div class="sound-options">
+          <div class="sound-opt active" data-sound="beep" onclick="selSound(this)">
+            <span class="sound-opt-icon">🔔</span>Beep
+          </div>
+          <div class="sound-opt" data-sound="alert" onclick="selSound(this)">
+            <span class="sound-opt-icon">🚨</span>Alert
+          </div>
+          <div class="sound-opt" data-sound="chime" onclick="selSound(this)">
+            <span class="sound-opt-icon">🎵</span>Chime
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <label class="f-label">Alarm Repeat Every</label>
+          <div class="freq-row">
+            <input class="f-input" id="alarm-freq" type="number" min="1" max="24" value="1" style="margin-bottom:0" />
+            <div class="freq-unit">hour(s)</div>
+          </div>
+        </div>
+        <button class="act-btn blue" style="margin-top:12px;width:100%;padding:10px;display:block;text-align:center"
+          onclick="testAlarmSound()">▶ Test Sound</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-alarm')">Cancel</button>
+      <button class="btn-submit" onclick="saveAlarmSettings()">Save Settings →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ COMPLETE MODAL ═══ -->
+<div class="overlay" id="modal-complete">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✅ Mark as Completed</div>
+    <div class="modal-sub">Type the verification code to confirm.</div>
+    <div class="captcha-box">
+      <div class="captcha-noise"></div>
+      <span class="captcha-text" id="captcha-code"></span>
+    </div>
+    <div class="f-group">
+      <label class="f-label">Enter Code</label>
+      <input class="f-input" id="captcha-input" placeholder="Type the code above…"
+        style="text-align:center;letter-spacing:7px;font-size:20px;font-family:Syne,sans-serif;margin-bottom:0" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-complete')">Cancel</button>
+      <button class="btn-submit" onclick="confirmComplete()">Confirm ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ALARM RINGING OVERLAY ═══ -->
+<div class="alarm-overlay" id="alarm-overlay">
+  <div class="alarm-ring-icon">🔔</div>
+  <div class="alarm-ring-title">⚠️ Stock Request Pending!</div>
+  <div class="alarm-ring-sub" id="alarm-ring-msg">A request is waiting for your action.</div>
+  <button class="alarm-stop-btn" onclick="stopAlarm()">Stop Alarm</button>
+</div>
+
+<!-- ═══ LIGHTBOX ═══ -->
+<div class="lightbox" id="lightbox" onclick="closeLB()">
+  <button class="lb-close" onclick="closeLB()">✕</button>
+  <img class="lb-img" id="lb-img" alt="item" />
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div id="toast"></div>
+
+<script type="module">
+// ════════════════════════════════════════════════════════════════════
+// FIREBASE CONFIG — Replace ALL values below with your Firebase project
+// ════════════════════════════════════════════════════════════════════
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCDygXRIooGuJbbaUaPfuT57V9Mbp8HjTs",
+  authDomain: "focusmithra-2794c.firebaseapp.com",
+  databaseURL: "https://focusmithra-2794c-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "focusmithra-2794c",
+  storageBucket: "focusmithra-2794c.firebasestorage.app",
+  messagingSenderId: "867971880995",
+  appId: "1:867971880995:web:8b187867e105da9d69f996",
+  measurementId: "G-L61TWKL62P"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+// ── DB helpers ────────────────────────────────────────────────────
+// Firebase keys cannot contain . # $ [ ] /  — we encode names for keys
+const safeKey  = n => encodeURIComponent(n).replace(/\./g,'%2E');
+const fromKey  = k => decodeURIComponent(k);
+
+const dbRef  = path => ref(db, path);
+const dbSet  = (path, val) => set(dbRef(path), val);
+const dbUpd  = (path, val) => update(dbRef(path), val);
+const dbDel  = path => remove(dbRef(path));
+const dbGet  = path => get(dbRef(path)).then(s => s.val());
+const dbLive = (path, cb) => onValue(dbRef(path), s => cb(s.val()));
+
+// ═══════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════
+let currentUser     = null;   // { name, role }
+let accounts        = {};     // { safeKey: {pass, role, displayName} }
+let requests        = {};     // { id: {...} }
+let notifications   = [];     // local array
+let reminderTimers  = {};
+let alarmTimers     = {};
+let completeId      = null;
+let alarmTargetId   = null;
+let captchaAns      = '';
+let selPriority     = 'low';
+let imgData         = null;
+let tabFilter       = 'all';
+let selectedSound   = 'beep';
+let audioCtx        = null;
+let alarmRinging    = false;
+let alarmRingInterval = null;
+
+const SESS_KEY    = 'fm_v4_session';
+const NOTIF_KEY   = 'fm_v4_notifs';
+const saveSession = name => localStorage.setItem(SESS_KEY, name);
+const loadSession = ()   => localStorage.getItem(SESS_KEY);
+const clearSession= ()   => localStorage.removeItem(SESS_KEY);
+
+// ═══════════════════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async () => {
+  showLoading(true);
+  try {
+    // Seed admin if DB is empty
+    const existing = await dbGet('accounts');
+    if (!existing) {
+      await dbSet('accounts/Admin', { pass: 'admin123', role: 'admin', displayName: 'Admin' });
+    }
+  } catch(e) {
+    showLoading(false);
+    showError('Cannot connect to Firebase. Check your config and internet connection.<br><br>Error: ' + e.message);
+    return;
+  }
+
+  // Live listeners — safe to set up before login
+  dbLive('accounts', val => {
+    accounts = val || {};
+    if (currentUser) {
+      const key = safeKey(currentUser.name);
+      const a = accounts[key] || accounts[currentUser.name]; // try both
+      if (!a) { doLogout(); return; }
+      currentUser.role = a.role;
+      renderAll();
+    }
+  });
+
+  dbLive('requests', val => {
+    const newReqs = val || {};
+    // Detect new requests for notifications
+    if (currentUser) {
+      detectNewRequests(requests, newReqs);
+    }
+    requests = newReqs;
+    if (currentUser) { renderAll(); restartTimers(); }
+  });
+
+  // Load saved notifications
+  try { notifications = JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]'); } catch(e) { notifications = []; }
+
+  // Restore session
+  const savedName = loadSession();
+  if (savedName) {
+    try {
+      // Try both safe key and raw name
+      let acc = await dbGet('accounts/' + safeKey(savedName));
+      if (!acc) acc = await dbGet('accounts/' + savedName);
+      if (acc) {
+        currentUser = { name: savedName, role: acc.role };
+        showLoading(false);
+        launchApp();
+        return;
+      }
+    } catch(e) {}
+    clearSession();
+  }
+  showLoading(false);
+  showLogin();
+});
+
+function showLoading(on) {
+  let el = document.getElementById('loading-screen');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loading-screen';
+    el.style.cssText = 'position:fixed;inset:0;background:#08090d;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:16px;';
+    el.innerHTML = '<div style="font-size:40px;animation:spin 1.5s linear infinite">⚙️</div>'
+                 + '<div style="color:#5a6a85;font-size:13px;font-family:DM Sans,sans-serif">Connecting to database…</div>';
+    document.body.appendChild(el);
+  }
+  el.style.display = on ? 'flex' : 'none';
+}
+
+function showError(msg) {
+  document.body.innerHTML = `<div class="config-error"><h2>❌ Connection Error</h2><p>${msg}</p></div>`;
+}
+
+function showLogin() {
+  document.getElementById('screen-login').classList.add('active');
+  document.getElementById('screen-app').classList.remove('active');
+}
+
+function launchApp() {
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('screen-app').classList.add('active');
+  document.getElementById('tb-name').textContent = currentUser.name;
+  updateRoleChip();
+  document.getElementById('nav-admin').style.display = currentUser.role === 'admin' ? 'flex' : 'none';
+  openPage('home');
+  renderAll();
+  initPush();
+}
+
+function updateRoleChip() {
+  const rl = document.getElementById('tb-role');
+  const labels = { worker:'WORKER', senior:'SENIOR', admin:'ADMIN', unassigned:'PENDING' };
+  rl.textContent = labels[currentUser.role] || 'PENDING';
+  rl.className   = 'role-tag rt-' + (currentUser.role || 'unassigned');
+}
+
+function renderAll() {
+  if (!currentUser) return;
+  updateRoleChip();
+  updateBadge();
+  renderStats();
+  renderWorkerBtn();
+  renderRequests();
+  renderNotifList();
+  if (currentUser.role === 'admin') renderAdminPage();
+  // Show/hide tabs for non-unassigned users
+  const showTabs = currentUser.role !== 'unassigned';
+  document.getElementById('tabs-row').style.display = showTabs ? 'flex' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════════
+window.togglePass = function() {
+  const i = document.getElementById('lp'), b = document.getElementById('eye-btn');
+  if (i.type === 'password') { i.type = 'text'; b.textContent = '🙈'; }
+  else { i.type = 'password'; b.textContent = '👁'; }
+};
+
+window.doLogin = async function() {
+  const name = document.getElementById('ln').value.trim();
+  const pass = document.getElementById('lp').value.trim();
+  if (!name || !pass) { toast('⚠️ Enter name and password', '#ef4444'); return; }
+
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.textContent = 'Checking…';
+
+  try {
+    // Try safe-encoded key first, then raw name (backward compat)
+    let acc = await dbGet('accounts/' + safeKey(name));
+    if (!acc) acc = await dbGet('accounts/' + name);
+
+    if (!acc) {
+      toast('❌ Account not found — ask your Admin', '#ef4444');
+      btn.disabled = false; btn.textContent = 'Sign In →';
+      return;
+    }
+    if (acc.pass !== pass) {
+      toast('❌ Wrong password', '#ef4444');
+      btn.disabled = false; btn.textContent = 'Sign In →';
+      return;
+    }
+    currentUser = { name, role: acc.role };
+    saveSession(name);
+    btn.disabled = false; btn.textContent = 'Sign In →';
+    launchApp();
+  } catch(e) {
+    toast('❌ Network error — check connection', '#ef4444');
+    btn.disabled = false; btn.textContent = 'Sign In →';
+  }
+};
+
+window.doLogout = function() {
+  Object.values(reminderTimers).forEach(clearInterval);
+  Object.values(alarmTimers).forEach(clearInterval);
+  reminderTimers = {}; alarmTimers = {};
+  stopAlarm();
+  clearSession();
+  currentUser = null;
+  document.getElementById('screen-app').classList.remove('active');
+  document.getElementById('screen-login').classList.add('active');
+  document.getElementById('ln').value = '';
+  document.getElementById('lp').value = '';
+  // Reset home page state
+  tabFilter = 'all';
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===0));
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════════
+window.openPage = function(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const page = document.getElementById('page-' + name);
+  if (page) page.classList.add('active');
+  const nb = document.getElementById('nav-' + name);
+  if (nb) nb.classList.add('active');
+  if (name === 'admin' && currentUser && currentUser.role === 'admin') renderAdminPage();
+  if (name === 'notifications') renderNotifList();
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════════════════════════
+function renderStats() {
+  const r = currentUser.role;
+  let list = Object.values(requests);
+  if (r === 'worker') list = list.filter(x => x.by === currentUser.name);
+  if (r === 'senior') list = list.filter(x => x.to === currentUser.name);
+  const t  = list.length,
+        p  = list.filter(x => x.status === 'pending').length,
+        ac = list.filter(x => x.status === 'accepted').length,
+        d  = list.filter(x => x.status === 'completed').length;
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card sc-o"><div class="stat-num">${t}</div><div class="stat-lbl">${r==='admin'?'Total':'My'} Requests</div></div>
+    <div class="stat-card sc-y"><div class="stat-num">${p}</div><div class="stat-lbl">Pending</div></div>
+    <div class="stat-card sc-b"><div class="stat-num">${ac}</div><div class="stat-lbl">Accepted</div></div>
+    <div class="stat-card sc-g"><div class="stat-num">${d}</div><div class="stat-lbl">Completed</div></div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// WORKER BUTTON
+// ═══════════════════════════════════════════════════════════════════
+function renderWorkerBtn() {
+  const el = document.getElementById('worker-btn-area');
+  if (currentUser.role === 'worker') {
+    el.innerHTML = `<div class="req-section"><div class="sec-title">📦 Stock Request</div>
+      <div class="sec-sub">Tap below to raise a new request to your senior incharge.</div>
+      <button class="big-req-btn" onclick="openReqModal()"><div class="pulse"></div>REQUEST FOR ORDER</button></div>`;
+  } else if (currentUser.role === 'unassigned') {
+    el.innerHTML = `<div class="pending-screen"><div class="pending-spin">⏳</div>
+      <div style="font-family:Syne,sans-serif;font-size:17px;font-weight:700;margin-bottom:8px">Waiting for Role Assignment</div>
+      <div style="font-size:13px;color:var(--muted);max-width:260px">Please ask your Admin to assign your role.</div></div>`;
+  } else { el.innerHTML = ''; }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// REQUESTS LIST
+// ═══════════════════════════════════════════════════════════════════
+function renderRequests() {
+  if (!currentUser || currentUser.role === 'unassigned') {
+    document.getElementById('req-list').innerHTML = '';
+    return;
+  }
+  const r = currentUser.role;
+  let list = Object.values(requests).sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  if (r === 'worker') list = list.filter(x => x.by === currentUser.name);
+  if (r === 'senior') list = list.filter(x => x.to === currentUser.name);
+  if (tabFilter !== 'all') list = list.filter(x => x.status === tabFilter);
+
+  const el = document.getElementById('req-list');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📭</div>
+      <div class="empty-title">Nothing here</div>
+      <div class="empty-desc">${r==='worker'?'Use the button above to raise a stock request.':'No requests assigned to you yet.'}</div></div>`;
+    return;
+  }
+  const sIcon  = { pending:'⏳', accepted:'👀', completed:'✅' };
+  const sLabel = { pending:'Pending', accepted:'Accepted', completed:'Completed' };
+
+  el.innerHTML = list.map(req => {
+    const id = req.id;
+    let acts = '';
+    if ((r === 'senior' || r === 'admin') && req.status === 'pending')
+      acts += `<button class="act-btn blue" onclick="acceptReq('${id}')">👀 Accept</button>`;
+    if ((r === 'senior' || r === 'admin') && req.status === 'accepted')
+      acts += `<button class="act-btn green" onclick="openCompleteModal('${id}')">✅ Complete</button>`;
+    if ((r === 'senior' || r === 'admin') && req.status !== 'completed') {
+      const hasAlarm = req.alarm && req.alarm.enabled;
+      acts += `<button class="act-btn ${hasAlarm?'alarm':'alarm-off'}" onclick="openAlarmModal('${id}')">
+        ${hasAlarm ? '🔔 Alarm On' : '🔕 Set Alarm'}</button>`;
+    }
+    if (r === 'worker' && req.status === 'pending')
+      acts += `<button class="act-btn red" onclick="cancelReq('${id}')">🗑 Cancel</button>`;
+    if (r === 'admin')
+      acts += `<button class="act-btn red" onclick="delReq('${id}')">🗑</button>`;
+
+    const hasAlarm = req.alarm && req.alarm.enabled;
+    return `<div class="req-card">
+      ${req.image ? `<img class="req-card-img" src="${req.image}" alt="Item" onclick="openLB('${id}')" loading="lazy" />` : ''}
+      <div class="req-body">
+        <div class="req-title">${sIcon[req.status]||'⏳'} ${escHtml(req.item)}</div>
+        <div class="req-meta">
+          <span>👷 ${escHtml(req.by)}</span><span>🏆 ${escHtml(req.to)}</span>
+          <span>🕐 ${ago(req.ts || req.id)}</span>
+          ${req.acceptedBy ? `<span style="color:#818cf8">✅ ${escHtml(req.acceptedBy)}</span>` : ''}
+        </div>
+        ${req.notes ? `<div class="req-note">"${escHtml(req.notes)}"</div>` : ''}
+        <div class="req-footer">
+          <div class="req-badges">
+            <span class="badge b-${req.status}">${sLabel[req.status]||req.status}</span>
+            <span class="badge b-${req.priority}">${req.priority||'low'}</span>
+            ${req.status !== 'completed' ? `<span class="reminder-chip">⏰ ${req.freq||1}h</span>` : ''}
+            ${hasAlarm ? `<span class="alarm-chip on">🔔 Alarm ${req.alarm.freq}h</span>` : ''}
+          </div>
+          <div class="req-actions-row">${acts}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.filterTab = function(f, el) {
+  tabFilter = f;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderRequests();
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// REQUEST MODAL
+// ═══════════════════════════════════════════════════════════════════
+window.openReqModal = function() {
+  // Populate seniors dropdown
+  const seniors = Object.entries(accounts)
+    .filter(([, v]) => v.role === 'senior')
+    .map(([k, v]) => v.displayName || fromKey(k));
+  document.getElementById('ri-senior').innerHTML = seniors.length
+    ? seniors.map(n => `<option value="${escAttr(n)}">${escHtml(n)}</option>`).join('')
+    : '<option value="">No seniors assigned — ask Admin</option>';
+
+  // Reset form
+  document.getElementById('ri-item').value  = '';
+  document.getElementById('ri-notes').value = '';
+  document.getElementById('ri-freq').value  = '1';
+  selPriority = 'low'; imgData = null;
+  document.getElementById('img-preview-el').style.display = 'none';
+  document.getElementById('img-ph').style.display         = 'block';
+  document.getElementById('img-clear-btn').style.display  = 'none';
+  document.getElementById('img-upload-area').classList.remove('has-img');
+  document.getElementById('img-file-input').value = '';
+  document.querySelectorAll('.p-opt').forEach(o => o.className = 'p-opt');
+  document.querySelector('.p-opt[data-p="low"]').classList.add('sel-low');
+  document.getElementById('modal-request').classList.add('show');
+};
+
+window.selP = function(el) {
+  document.querySelectorAll('.p-opt').forEach(o => o.className = 'p-opt');
+  el.classList.add('sel-' + el.dataset.p);
+  selPriority = el.dataset.p;
+};
+
+window.triggerFileInput = function() { document.getElementById('img-file-input').click(); };
+
+window.handleImg = function(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      const MAX = 800; let w = img.width, h = img.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      imgData = c.toDataURL('image/jpeg', 0.65); // lower quality to stay under Firebase 10MB
+      document.getElementById('img-preview-el').src = imgData;
+      document.getElementById('img-preview-el').style.display = 'block';
+      document.getElementById('img-ph').style.display          = 'none';
+      document.getElementById('img-clear-btn').style.display   = 'block';
+      document.getElementById('img-upload-area').classList.add('has-img');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+window.clearImg = function(e) {
+  e.stopPropagation(); imgData = null;
+  document.getElementById('img-preview-el').style.display = 'none';
+  document.getElementById('img-ph').style.display          = 'block';
+  document.getElementById('img-clear-btn').style.display   = 'none';
+  document.getElementById('img-upload-area').classList.remove('has-img');
+  document.getElementById('img-file-input').value = '';
+};
+
+window.submitRequest = async function() {
+  const item  = document.getElementById('ri-item').value.trim();
+  const notes = document.getElementById('ri-notes').value.trim();
+  const to    = document.getElementById('ri-senior').value;
+  const freq  = parseInt(document.getElementById('ri-freq').value) || 1;
+  if (!item) { toast('⚠️ Enter item name', '#ef4444'); return; }
+  if (!to)   { toast('⚠️ No senior available — ask Admin', '#ef4444'); return; }
+
+  const ts = Date.now();
+  const id = ts.toString();
+  const req = {
+    id, ts, item, notes, to,
+    by: currentUser.name,
+    priority: selPriority,
+    freq,
+    status: 'pending',
+    image: imgData || null,
+    alarm: { enabled: false, sound: 'beep', freq: 1 }
+  };
+  try {
+    await dbSet('requests/' + id, req);
+    closeModal('modal-request');
+    toast(`✅ Request sent to ${to}!`, '#22c55e');
+    addNotif('📦', `You sent a request for "${item}" to ${to}`);
+  } catch(e) {
+    toast('❌ Failed to send — check connection', '#ef4444');
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════════════════════════════════════
+window.acceptReq = async function(id) {
+  try {
+    await dbUpd('requests/' + id, { status: 'accepted', acceptedBy: currentUser.name });
+    const req = requests[id];
+    toast('👀 Request accepted!', '#818cf8');
+    addNotif('👀', `You accepted "${req ? req.item : id}"`);
+  } catch(e) { toast('❌ Error — try again', '#ef4444'); }
+};
+
+window.cancelReq = async function(id) {
+  clearInterval(reminderTimers[id]); delete reminderTimers[id];
+  clearInterval(alarmTimers[id]);    delete alarmTimers[id];
+  try {
+    await dbDel('requests/' + id);
+    toast('🗑 Request cancelled', '#64748b');
+  } catch(e) { toast('❌ Error — try again', '#ef4444'); }
+};
+
+window.delReq = async function(id) {
+  clearInterval(reminderTimers[id]); delete reminderTimers[id];
+  clearInterval(alarmTimers[id]);    delete alarmTimers[id];
+  try {
+    await dbDel('requests/' + id);
+    toast('🗑 Deleted', '#64748b');
+  } catch(e) { toast('❌ Error — try again', '#ef4444'); }
+};
+
+window.openCompleteModal = function(id) {
+  completeId   = id;
+  captchaAns   = genCaptcha();
+  document.getElementById('captcha-code').textContent  = captchaAns;
+  document.getElementById('captcha-input').value = '';
+  document.getElementById('modal-complete').classList.add('show');
+};
+
+function genCaptcha() {
+  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({ length: 6 }, () => c[Math.floor(Math.random() * c.length)]).join('');
+}
+
+window.confirmComplete = async function() {
+  const inp = document.getElementById('captcha-input').value.trim().toUpperCase();
+  if (inp !== captchaAns) {
+    toast('❌ Wrong code — try again', '#ef4444');
+    document.getElementById('captcha-input').value = '';
+    captchaAns = genCaptcha();
+    document.getElementById('captcha-code').textContent = captchaAns;
+    return;
+  }
+  try {
+    await dbUpd('requests/' + completeId, { status: 'completed' });
+    clearInterval(reminderTimers[completeId]); delete reminderTimers[completeId];
+    clearInterval(alarmTimers[completeId]);    delete alarmTimers[completeId];
+    const req = requests[completeId];
+    closeModal('modal-complete');
+    toast('🎉 Marked complete!', '#22c55e');
+    addNotif('✅', `"${req ? req.item : completeId}" marked as completed`);
+  } catch(e) { toast('❌ Error — try again', '#ef4444'); }
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// ALARM SYSTEM
+// ═══════════════════════════════════════════════════════════════════
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playSoundType(type) {
+  try {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    if (type === 'beep') {
+      [0, 0.3].forEach(offset => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = 'sine'; o.frequency.value = 880;
+        g.gain.setValueAtTime(0, ctx.currentTime + offset);
+        g.gain.linearRampToValueAtTime(0.4, ctx.currentTime + offset + 0.05);
+        g.gain.linearRampToValueAtTime(0, ctx.currentTime + offset + 0.2);
+        o.start(ctx.currentTime + offset); o.stop(ctx.currentTime + offset + 0.25);
+      });
+    } else if (type === 'alert') {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination); o.type = 'sawtooth';
+      o.frequency.setValueAtTime(400, ctx.currentTime);
+      o.frequency.linearRampToValueAtTime(1200, ctx.currentTime + 0.6);
+      o.frequency.linearRampToValueAtTime(400, ctx.currentTime + 1.2);
+      g.gain.setValueAtTime(0.35, ctx.currentTime);
+      g.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.2);
+      o.start(ctx.currentTime); o.stop(ctx.currentTime + 1.25);
+    } else if (type === 'chime') {
+      [[523,0],[659,0.35],[784,0.7]].forEach(([freq, offset]) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination); o.type = 'triangle'; o.frequency.value = freq;
+        g.gain.setValueAtTime(0.4, ctx.currentTime + offset);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + offset + 0.8);
+        o.start(ctx.currentTime + offset); o.stop(ctx.currentTime + offset + 0.85);
+      });
+    }
+  } catch(e) { console.warn('Audio error:', e); }
+}
+
+function ringAlarm(req) {
+  if (alarmRinging) return; // don't stack
+  alarmRinging = true;
+  document.getElementById('alarm-ring-msg').textContent =
+    `"${req.item}" needs your attention!\nRequested by ${req.by}`;
+  document.getElementById('alarm-overlay').classList.add('ringing');
+  playSoundType(req.alarm.sound || 'beep');
+  alarmRingInterval = setInterval(() => {
+    if (alarmRinging) playSoundType(req.alarm.sound || 'beep');
+  }, 3000);
+}
+
+window.stopAlarm = function() {
+  alarmRinging = false;
+  clearInterval(alarmRingInterval);
+  document.getElementById('alarm-overlay').classList.remove('ringing');
+};
+
+window.openAlarmModal = function(id) {
+  alarmTargetId = id;
+  const req = requests[id]; if (!req) return;
+  document.getElementById('alarm-modal-sub').textContent = `Alarm for: "${req.item}"`;
+  const alarm = req.alarm || { enabled: false, sound: 'beep', freq: 1 };
+  document.getElementById('alarm-enabled-toggle').checked = alarm.enabled;
+  document.getElementById('alarm-freq').value = alarm.freq || 1;
+  selectedSound = alarm.sound || 'beep';
+  document.querySelectorAll('.sound-opt').forEach(o =>
+    o.classList.toggle('active', o.dataset.sound === selectedSound));
+  document.getElementById('alarm-options-wrap').style.display = alarm.enabled ? 'block' : 'none';
+  document.getElementById('modal-alarm').classList.add('show');
+};
+
+window.onAlarmToggle = function() {
+  document.getElementById('alarm-options-wrap').style.display =
+    document.getElementById('alarm-enabled-toggle').checked ? 'block' : 'none';
+};
+
+window.selSound = function(el) {
+  document.querySelectorAll('.sound-opt').forEach(o => o.classList.remove('active'));
+  el.classList.add('active'); selectedSound = el.dataset.sound;
+};
+
+window.testAlarmSound = function() { playSoundType(selectedSound); };
+
+window.saveAlarmSettings = async function() {
+  const req = requests[alarmTargetId]; if (!req) return;
+  const enabled = document.getElementById('alarm-enabled-toggle').checked;
+  const freq    = parseInt(document.getElementById('alarm-freq').value) || 1;
+  try {
+    await dbUpd('requests/' + alarmTargetId, { alarm: { enabled, sound: selectedSound, freq } });
+    if (alarmTimers[alarmTargetId]) { clearInterval(alarmTimers[alarmTargetId]); delete alarmTimers[alarmTargetId]; }
+    if (enabled && req.status !== 'completed') {
+      startAlarmTimer({ ...req, alarm: { enabled, sound: selectedSound, freq } });
+      toast('🔔 Alarm set!', '#ef4444');
+    } else { toast('🔕 Alarm off', '#64748b'); }
+    closeModal('modal-alarm');
+  } catch(e) { toast('❌ Error saving alarm', '#ef4444'); }
+};
+
+function startAlarmTimer(req) {
+  if (!req.alarm || !req.alarm.enabled) return;
+  if (alarmTimers[req.id]) clearInterval(alarmTimers[req.id]);
+  const ms = (req.alarm.freq || 1) * 3600 * 1000;
+  alarmTimers[req.id] = setInterval(() => {
+    const live = requests[req.id];
+    if (!live || live.status === 'completed' || !live.alarm || !live.alarm.enabled) {
+      clearInterval(alarmTimers[req.id]); delete alarmTimers[req.id]; return;
+    }
+    ringAlarm(live);
+  }, ms);
+}
+
+function startReminderTimer(req) {
+  if (reminderTimers[req.id]) clearInterval(reminderTimers[req.id]);
+  const ms = (req.freq || 1) * 3600 * 1000;
+  reminderTimers[req.id] = setInterval(() => {
+    const live = requests[req.id];
+    if (!live || live.status === 'completed') {
+      clearInterval(reminderTimers[req.id]); delete reminderTimers[req.id]; return;
+    }
+  }, ms);
+}
+
+function restartTimers() {
+  Object.values(requests).filter(r => r.status !== 'completed').forEach(r => {
+    startReminderTimer(r);
+    if (r.alarm && r.alarm.enabled) startAlarmTimer(r);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ADMIN
+// ═══════════════════════════════════════════════════════════════════
+window.addMember = async function() {
+  const name = document.getElementById('am-name').value.trim();
+  const pass = document.getElementById('am-pass').value.trim();
+  const role = document.getElementById('am-role').value;
+  if (!name) { toast('⚠️ Enter name', '#ef4444'); return; }
+  if (!pass) { toast('⚠️ Set a password', '#ef4444'); return; }
+  if (pass.length < 4) { toast('⚠️ Password must be at least 4 characters', '#ef4444'); return; }
+
+  const key = safeKey(name);
+  // Check if already exists
+  const existing = await dbGet('accounts/' + key);
+  if (existing) { toast('⚠️ Name already exists', '#ef4444'); return; }
+
+  try {
+    await dbSet('accounts/' + key, { pass, role, displayName: name });
+    document.getElementById('am-name').value = '';
+    document.getElementById('am-pass').value = '';
+    toast(`✅ ${name} added as ${role}`, '#22c55e');
+  } catch(e) { toast('❌ Error adding member', '#ef4444'); }
+};
+
+window.changeRole = async function(key, newRole) {
+  try {
+    await dbUpd('accounts/' + key, { role: newRole });
+    const name = fromKey(key);
+    toast(`✅ ${name} → ${newRole}`, '#22c55e');
+  } catch(e) { toast('❌ Error changing role', '#ef4444'); }
+};
+
+window.removeMember = async function(key) {
+  const name = fromKey(key);
+  if (name === currentUser.name || key === safeKey(currentUser.name)) {
+    toast('⚠️ Cannot remove yourself', '#ef4444'); return;
+  }
+  try {
+    await dbDel('accounts/' + key);
+    toast(`🗑 ${name} removed`, '#64748b');
+  } catch(e) { toast('❌ Error removing member', '#ef4444'); }
+};
+
+function renderAdminPage() {
+  const el = document.getElementById('admin-user-list');
+  if (!el) return;
+  const em = { worker:'👷', senior:'🏆', admin:'⚙️', unassigned:'❓' };
+  const lb = { worker:'Worker', senior:'Senior', admin:'Admin', unassigned:'Unassigned' };
+  const entries = Object.entries(accounts);
+  if (!entries.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-desc">No members yet.</div></div>';
+    return;
+  }
+  el.innerHTML = entries.map(([key, a]) => {
+    const displayName = a.displayName || fromKey(key);
+    const isMe = displayName === currentUser.name;
+    return `<div class="user-row-a">
+      <div class="u-info">
+        <div class="u-name">${em[a.role]||'👤'} ${escHtml(displayName)}${isMe?' <span style="font-size:10px;color:var(--muted)">(you)</span>':''}</div>
+        <div class="u-meta">
+          <span class="badge role-tag rt-${a.role}">${lb[a.role]||'?'}</span>
+          <span>🔑 ${escHtml(a.pass)}</span>
+        </div>
+      </div>
+      <div class="u-actions">
+        <select class="role-sel" onchange="changeRole('${key}',this.value)">
+          <option value="worker"  ${a.role==='worker' ?'selected':''}>👷 Worker</option>
+          <option value="senior"  ${a.role==='senior' ?'selected':''}>🏆 Senior</option>
+          <option value="admin"   ${a.role==='admin'  ?'selected':''}>⚙️ Admin</option>
+        </select>
+        ${!isMe ? `<button class="del-btn" onclick="removeMember('${key}')">🗑</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// NOTIFICATIONS (local, per-device)
+// ═══════════════════════════════════════════════════════════════════
+function addNotif(icon, text) {
+  notifications.unshift({ icon, text, ts: Date.now() });
+  if (notifications.length > 50) notifications = notifications.slice(0, 50);
+  localStorage.setItem(NOTIF_KEY, JSON.stringify(notifications));
+  updateBadge();
+  renderNotifList();
+}
+
+function detectNewRequests(oldReqs, newReqs) {
+  Object.values(newReqs).forEach(req => {
+    if (!oldReqs[req.id]) {
+      // Brand new request
+      if (currentUser.role === 'senior' && req.to === currentUser.name)
+        addNotif('📦', `New request: "${req.item}" from ${req.by}`);
+      if (currentUser.role === 'admin')
+        addNotif('📦', `New request: "${req.item}" from ${req.by} → ${req.to}`);
+    } else {
+      const old = oldReqs[req.id];
+      if (old.status !== req.status) {
+        if (req.status === 'accepted' && currentUser.role === 'worker' && req.by === currentUser.name)
+          addNotif('👀', `Your request "${req.item}" was accepted by ${req.acceptedBy}`);
+        if (req.status === 'completed' && currentUser.role === 'worker' && req.by === currentUser.name)
+          addNotif('✅', `Your request "${req.item}" is completed!`);
+      }
+    }
+  });
+}
+
+function updateBadge() {
+  const badge = document.getElementById('notif-badge');
+  if (!badge) return;
+  const count = notifications.length;
+  badge.textContent = count > 9 ? '9+' : count;
+  badge.style.display = count > 0 ? 'flex' : 'none';
+}
+
+function renderNotifList() {
+  const el = document.getElementById('notif-list'); if (!el) return;
+  if (!notifications.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">🔔</div><div class="empty-title">All caught up</div><div class="empty-desc">No notifications yet.</div></div>';
+    return;
+  }
+  el.innerHTML = notifications.map(n => `
+    <div class="notif-item">
+      <div class="n-dot" style="background:var(--surface2)">${n.icon}</div>
+      <div><div class="n-text">${escHtml(n.text)}</div><div class="n-time">${ago(n.ts)}</div></div>
+    </div>`).join('');
+}
+
+window.clearNotifs = function() {
+  notifications = [];
+  localStorage.setItem(NOTIF_KEY, '[]');
+  updateBadge();
+  renderNotifList();
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// PUSH NOTIFICATIONS
+// ═══════════════════════════════════════════════════════════════════
+function initPush() {
+  if (!('Notification' in window)) return;
+  const perm = Notification.permission;
+  if (perm !== 'granted' && perm !== 'denied') renderPushBanner();
+}
+
+function renderPushBanner() {
+  const el = document.getElementById('push-banner-area');
+  el.innerHTML = `<div class="push-banner">
+    <div class="push-banner-text"><b>Enable push alerts</b> to get notified even when on another tab.</div>
+    <div class="pba">
+      <button class="btn-allow" onclick="reqPush()">🔔 Allow</button>
+      <button class="btn-dismiss" onclick="this.closest('.push-banner').remove()">✕</button>
+    </div></div>`;
+}
+
+window.reqPush = function() {
+  Notification.requestPermission().then(p => {
+    if (p === 'granted') {
+      new Notification('FocusMithra', { body: 'Alerts active!', icon: '/icon-192.png' });
+      toast('🔔 Push enabled!', '#22c55e');
+    }
+    document.getElementById('push-banner-area').innerHTML = '';
+  });
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// LIGHTBOX
+// ═══════════════════════════════════════════════════════════════════
+window.openLB = function(id) {
+  const r = requests[id]; if (!r || !r.image) return;
+  document.getElementById('lb-img').src = r.image;
+  document.getElementById('lightbox').classList.add('show');
+};
+window.closeLB = function() { document.getElementById('lightbox').classList.remove('show'); };
+
+// ═══════════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════════
+window.closeModal = function(id) { document.getElementById(id).classList.remove('show'); };
+
+function toast(msg, color = '#22c55e') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = color + '44';
+  t.style.color = color;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function ago(ts) {
+  const d = Math.floor((Date.now() - ts) / 1000);
+  if (d < 10) return 'just now';
+  if (d < 60) return d + 's ago';
+  if (d < 3600) return Math.floor(d / 60) + 'm ago';
+  if (d < 86400) return Math.floor(d / 3600) + 'h ago';
+  return Math.floor(d / 86400) + 'd ago';
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function escAttr(s) { return escHtml(s); }
+
+// Enter key on login
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const loginScreen = document.getElementById('screen-login');
+    if (loginScreen && loginScreen.classList.contains('active')) doLogin();
+  }
+});
+
+// Close modals on backdrop click
+document.querySelectorAll('.overlay').forEach(ov => {
+  ov.addEventListener('click', e => {
+    if (e.target === ov) ov.classList.remove('show');
+  });
+});
+
+// Expose toast globally (for any inline callers)
+window.toast = toast;
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
