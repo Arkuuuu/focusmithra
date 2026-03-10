@@ -31,25 +31,34 @@ function safeKey(name) {
 }
 
 /**
- * Look up a user's FCM token from their account record.
- * Returns null if no token is stored.
+ * Look up all FCM tokens for a user account.
+ * Supports both legacy single token (fcmToken) and per-device map (fcmTokens).
  */
-async function getFcmToken(userName) {
-  if (!userName) return null;
+async function getFcmTokens(userName) {
+  if (!userName) return [];
   const key = safeKey(userName);
-  const snap = await getDatabase().ref(`accounts/${key}/fcmToken`).get();
-  return snap.exists() ? snap.val() : null;
+  const snap = await getDatabase().ref(`accounts/${key}`).get();
+  if (!snap.exists()) return [];
+  const acc = snap.val() || {};
+  const tokens = new Set();
+  if (acc.fcmToken && typeof acc.fcmToken === "string") tokens.add(acc.fcmToken);
+  if (acc.fcmTokens && typeof acc.fcmTokens === "object") {
+    Object.values(acc.fcmTokens).forEach((t) => {
+      if (typeof t === "string" && t) tokens.add(t);
+    });
+  }
+  return Array.from(tokens);
 }
 
 /**
  * Send a push notification to a specific user by their display name.
  */
 async function sendPushToUser(userName, title, body, tag) {
-  const token = await getFcmToken(userName);
-  if (!token) return; // user has no FCM token registered
+  const tokens = await getFcmTokens(userName);
+  if (!tokens.length) return; // user has no FCM token registered
 
   const message = {
-    token,
+    tokens,
     notification: { title, body },
     data: { tag: tag || "fm-notif" },
     android: {
@@ -80,16 +89,44 @@ async function sendPushToUser(userName, title, body, tag) {
   };
 
   try {
-    await getMessaging().send(message);
-  } catch (err) {
-    // If token is invalid/expired, clean it up
-    if (
-      err.code === "messaging/invalid-registration-token" ||
-      err.code === "messaging/registration-token-not-registered"
-    ) {
+    const result = await getMessaging().sendEachForMulticast(message);
+    // Cleanup invalid/expired tokens from DB.
+    if (result.failureCount > 0) {
       const key = safeKey(userName);
-      await getDatabase().ref(`accounts/${key}/fcmToken`).remove();
+      const invalidTokens = new Set();
+      result.responses.forEach((res, idx) => {
+        if (res.success) return;
+        const errCode = res.error && res.error.code ? res.error.code : "";
+        if (
+          errCode.includes("invalid-registration-token") ||
+          errCode.includes("registration-token-not-registered")
+        ) {
+          invalidTokens.add(tokens[idx]);
+        }
+      });
+
+      if (invalidTokens.size > 0) {
+        const accSnap = await getDatabase().ref(`accounts/${key}`).get();
+        if (accSnap.exists()) {
+          const acc = accSnap.val() || {};
+          const updates = {};
+          if (typeof acc.fcmToken === "string" && invalidTokens.has(acc.fcmToken)) {
+            updates.fcmToken = null;
+          }
+          if (acc.fcmTokens && typeof acc.fcmTokens === "object") {
+            Object.entries(acc.fcmTokens).forEach(([devId, val]) => {
+              if (typeof val === "string" && invalidTokens.has(val)) {
+                updates[`fcmTokens/${devId}`] = null;
+              }
+            });
+          }
+          if (Object.keys(updates).length > 0) {
+            await getDatabase().ref(`accounts/${key}`).update(updates);
+          }
+        }
+      }
     }
+  } catch (err) {
     console.warn(`FCM send failed for ${userName}:`, err.message);
   }
 }

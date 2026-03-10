@@ -778,6 +778,9 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "867971880995",
   appId:             "1:867971880995:web:8b187867e105da9d69f996"
 };
+// IMPORTANT: Set this from Firebase Console > Project Settings > Cloud Messaging > Web push certificates
+// Without this, closed-app/background notifications cannot work.
+const FIREBASE_WEB_PUSH_VAPID_KEY = "";
 // ═══════════════════════════════════════════════════════════════════════
 
 // ── Config guard ────────────────────────────────────────────────────────
@@ -911,6 +914,18 @@ const loadSession  = ()   => { try { return localStorage.getItem(SESS_KEY); } ca
 const clearSession = ()   => { try { localStorage.removeItem(SESS_KEY); } catch(e) {} };
 const saveNotifs   = ()   => { try { localStorage.setItem(NOTIF_KEY, JSON.stringify(notifications)); } catch(e) {} };
 const loadNotifs   = ()   => { try { return JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]'); } catch(e) { return []; } };
+const getDeviceId  = ()   => {
+  try {
+    let id = localStorage.getItem('fm_device_id');
+    if (!id) {
+      id = 'dev_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem('fm_device_id', id);
+    }
+    return id;
+  } catch(e) {
+    return 'dev_fallback';
+  }
+};
 
 // ═══════════════════════════════════════════════════════════════════════
 // BOOT
@@ -2442,6 +2457,7 @@ window.grantPermissions = async function() {
           });
         }
       } catch(e) {}
+      initFCM().catch(() => {});
     } else {
       toast('ℹ️ You can enable notifications later in Settings', '#64748b');
     }
@@ -2478,6 +2494,7 @@ window.reqPush = function() {
       try {
         new Notification('FocusMithra', { body: 'Alerts are now active!', icon: '/icon-192.png' });
       } catch(e) {}
+      initFCM().catch(() => {});
       toast('🔔 Push notifications enabled!', '#22c55e');
     } else {
       toast('ℹ️ Push notifications blocked', '#64748b');
@@ -2498,18 +2515,24 @@ async function initFCM() {
   if (!messaging) return;
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   try {
-    // Get FCM token — requires a VAPID key from Firebase Console > Cloud Messaging
-    // To enable: go to Firebase Console > Project Settings > Cloud Messaging > Web Push Certificates
-    // Generate a key pair and paste the public key below
-    const VAPID_KEY = ''; // TODO: paste your VAPID public key here
-    if (!VAPID_KEY) return; // Skip FCM until VAPID key is configured
+    if (!FIREBASE_WEB_PUSH_VAPID_KEY) {
+      console.warn('FCM disabled: FIREBASE_WEB_PUSH_VAPID_KEY is not configured');
+      return;
+    }
 
     const swReg = await navigator.serviceWorker.ready;
-    const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+    const token = await getToken(messaging, {
+      vapidKey: FIREBASE_WEB_PUSH_VAPID_KEY,
+      serviceWorkerRegistration: swReg
+    });
     if (token && currentUser) {
-      // Store the FCM token in the user's account record
+      // Store token per device so notifications can reach multiple devices for the same account.
       const key = safeKey(currentUser.name);
-      await dbUpd('accounts/' + key, { fcmToken: token });
+      const deviceId = getDeviceId();
+      await dbUpd('accounts/' + key, {
+        fcmToken: token,
+        [`fcmTokens/${deviceId}`]: token
+      });
     }
     // Handle foreground messages from FCM
     onMessage(messaging, payload => {
