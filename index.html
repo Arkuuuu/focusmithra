@@ -986,7 +986,8 @@ window.addEventListener('DOMContentLoaded', async () => {
       if (acc && acc.pass) {
         currentUser = { name: savedName, role: acc.role };
         bootDone = true;
-        isFirstReqFetch = true;
+        // requests state is already hydrated by the live listener during boot
+        isFirstReqFetch = false;
         showLoading(false);
         launchApp();
         return;
@@ -1093,6 +1094,8 @@ window.togglePass = function() {
 window.doLogin = async function() {
   const nameRaw = document.getElementById('ln').value.trim();
   const pass    = document.getElementById('lp').value;   // don't trim — password may have spaces
+  // Prime audio on explicit user gesture so notification sounds are reliable.
+  unlockAudio();
   if (!nameRaw) { toast('⚠️ Enter your name', '#ef4444'); document.getElementById('ln').focus(); return; }
   if (!pass)    { toast('⚠️ Enter your password', '#ef4444'); document.getElementById('lp').focus(); return; }
 
@@ -1124,7 +1127,8 @@ window.doLogin = async function() {
     // Successful login
     currentUser = { name: nameRaw, role: acc.role };
     saveSession(nameRaw);
-    isFirstReqFetch = true; // reset so notif flood doesn't happen
+    // requests state is already hydrated by the live listener, so allow immediate detection
+    isFirstReqFetch = false;
     btn.disabled = false; btn.textContent = 'Sign In →';
     launchApp();
 
@@ -1866,7 +1870,14 @@ function stopAlarmAudioFallback() {
   } catch(e) {}
 }
 
+// Alarms/reminders are only for the assigned senior account.
+function isRequestAssignedToCurrentUser(req) {
+  if (!currentUser || !req) return false;
+  return req.to === currentUser.name && currentUser.role === 'senior';
+}
+
 function ringAlarm(req) {
+  if (!isRequestAssignedToCurrentUser(req)) return;
   if (alarmRinging) return;
   alarmRinging = true;
   const msg = document.getElementById('alarm-ring-msg');
@@ -1906,6 +1917,7 @@ window.stopAlarm = function() {
 
 // ── System notification for alarms ───────────────────────────────────────
 function sendAlarmNotification(req) {
+  if (!isRequestAssignedToCurrentUser(req)) return;
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   const itemLabel = Array.isArray(req.items) && req.items.length
     ? req.items.join(', ') : (req.item || 'Stock Request');
@@ -1991,7 +2003,7 @@ window.saveAlarmSettings = async function() {
   try {
     await dbUpd('requests/' + alarmTargetId, { alarm: alarmObj });
     stopTimersForId(alarmTargetId);
-    if (enabled && req.status !== 'completed') {
+    if (enabled && req.status !== 'completed' && isRequestAssignedToCurrentUser(req)) {
       startAlarmTimer({ ...req, alarm: alarmObj });
       toast('🔔 Alarm set!', '#ef4444');
     } else {
@@ -2005,12 +2017,13 @@ window.saveAlarmSettings = async function() {
 };
 
 function startAlarmTimer(req) {
+  if (!isRequestAssignedToCurrentUser(req)) return;
   if (!req?.alarm?.enabled || req.status === 'completed') return;
   if (alarmTimers[req.id]) clearInterval(alarmTimers[req.id]);
   const ms = (req.alarm.freq || 60) * 60_000; // freq stored in minutes
   alarmTimers[req.id] = setInterval(() => {
     const live = requests[req.id];
-    if (!live || live.status === 'completed' || !live.alarm?.enabled) {
+    if (!live || live.status === 'completed' || !live.alarm?.enabled || !isRequestAssignedToCurrentUser(live)) {
       stopTimersForId(req.id); return;
     }
     ringAlarm(live);
@@ -2018,19 +2031,22 @@ function startAlarmTimer(req) {
 }
 
 function startReminderTimer(req) {
+  if (!isRequestAssignedToCurrentUser(req)) return;
   if (reminderTimers[req.id]) clearInterval(reminderTimers[req.id]);
   const ms = (req.freq || 60) * 60_000; // freq stored in minutes
   reminderTimers[req.id] = setInterval(() => {
     const live = requests[req.id];
-    if (!live || live.status === 'completed') {
+    if (!live || live.status === 'completed' || !isRequestAssignedToCurrentUser(live)) {
       clearInterval(reminderTimers[req.id]); delete reminderTimers[req.id];
+      return;
     }
     // Send system notification as reminder
-    if (live && live.status !== 'completed') sendReminderNotification(live);
+    sendReminderNotification(live);
   }, ms);
 }
 
 function sendReminderNotification(req) {
+  if (!isRequestAssignedToCurrentUser(req)) return;
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   if (document.visibilityState === 'visible') return; // only notify when app is in background
   const itemLabel = Array.isArray(req.items) && req.items.length
@@ -2050,8 +2066,10 @@ function sendReminderNotification(req) {
 }
 
 function restartTimers() {
-  // Only process requests not yet completed
-  const active = Object.values(requests).filter(r => r.status !== 'completed');
+  // Only process active requests assigned to this senior account.
+  const active = Object.values(requests).filter(r =>
+    r.status !== 'completed' && isRequestAssignedToCurrentUser(r)
+  );
   // Remove timers for requests no longer active
   const activeIds = new Set(active.map(r => r.id));
   Object.keys(reminderTimers).filter(id => !activeIds.has(id)).forEach(id => {
