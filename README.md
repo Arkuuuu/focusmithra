@@ -115,7 +115,7 @@ focusmithra/
 - Firebase API keys in client-side code are expected — restrict them via Firebase Console > Project Settings > API restrictions
 - Set Firebase Realtime Database rules to restrict read/write access
 - Change the default admin password immediately after first deployment
-- Passwords are stored in Firebase — consider implementing hashing for production use
+- **Important:** Passwords are currently stored in plaintext in Firebase. This app is designed for internal team use. For production or public-facing deployments, implement server-side password hashing (e.g., bcrypt via Cloud Functions)
 
 ## Browser Support
 

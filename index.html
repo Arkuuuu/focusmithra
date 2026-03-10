@@ -683,6 +683,17 @@ let loginAttempts    = 0;
 let loginLockUntil   = 0;
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOGIN_LOCK_MS      = 30_000; // 30 seconds
+const LOGIN_LOCK_KEY     = 'fm_login_lock';
+
+// Restore rate-limit state from localStorage
+try {
+  const saved = JSON.parse(localStorage.getItem(LOGIN_LOCK_KEY) || '{}');
+  if (saved.until && saved.until > Date.now()) { loginLockUntil = saved.until; loginAttempts = saved.attempts || 0; }
+} catch(e) {}
+
+function saveLoginLock() {
+  try { localStorage.setItem(LOGIN_LOCK_KEY, JSON.stringify({ until: loginLockUntil, attempts: loginAttempts })); } catch(e) {}
+}
 
 const SESS_KEY  = 'fm_v5_session';
 const NOTIF_KEY = 'fm_v5_notifs';
@@ -858,8 +869,7 @@ window.togglePass = function() {
 window.doLogin = async function() {
   // Rate limiting
   if (Date.now() < loginLockUntil) {
-    const secs = Math.ceil((loginLockUntil - Date.now()) / 1000);
-    toast(`⏳ Too many attempts — wait ${secs}s`, '#ef4444');
+    toast('⏳ Too many attempts — please try again later', '#ef4444');
     return;
   }
 
@@ -878,6 +888,7 @@ window.doLogin = async function() {
     if (!acc) {
       loginAttempts++;
       if (loginAttempts >= MAX_LOGIN_ATTEMPTS) { loginLockUntil = Date.now() + LOGIN_LOCK_MS; loginAttempts = 0; }
+      saveLoginLock();
       toast('❌ Account not found — ask your Admin', '#ef4444');
       btn.disabled = false; btn.textContent = 'Sign In →';
       document.getElementById('ln').focus();
@@ -886,6 +897,7 @@ window.doLogin = async function() {
     if (acc.pass !== pass) {
       loginAttempts++;
       if (loginAttempts >= MAX_LOGIN_ATTEMPTS) { loginLockUntil = Date.now() + LOGIN_LOCK_MS; loginAttempts = 0; }
+      saveLoginLock();
       toast('❌ Wrong password', '#ef4444');
       btn.disabled = false; btn.textContent = 'Sign In →';
       document.getElementById('lp').value = '';
@@ -895,6 +907,8 @@ window.doLogin = async function() {
 
     // Successful login
     loginAttempts = 0;
+    loginLockUntil = 0;
+    saveLoginLock();
     currentUser = { name: nameRaw, role: acc.role };
     saveSession(nameRaw);
     isFirstReqFetch = true; // reset so notif flood doesn't happen
