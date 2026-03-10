@@ -190,7 +190,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .u-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;}
 .role-sel{background:var(--surface);border:1px solid var(--border);border-radius:7px;
   padding:5px 8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:11px;
-  outline:none;cursor:pointer;-webkit-appearance:none;}
+  outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;}
 .role-sel:focus{border-color:var(--accent);}
 .del-btn{background:none;border:1px solid var(--border);border-radius:7px;
   padding:5px 9px;color:var(--muted);font-size:12px;cursor:pointer;transition:all .2s;}
@@ -217,7 +217,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .f-group{margin-bottom:14px;}
 .f-select,.f-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);
   border-radius:10px;padding:11px 13px;color:var(--text);font-family:'DM Sans',sans-serif;
-  font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none;}
+  font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none;}
 .f-select:focus,.f-textarea:focus{border-color:var(--accent);}
 .f-textarea{resize:vertical;min-height:66px;}
 .priority-row{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
@@ -395,6 +395,44 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .config-error code{background:var(--surface2);padding:2px 7px;border-radius:5px;
   font-family:monospace;color:var(--accentl);font-size:12px;}
 
+/* ── iOS BANNER ── */
+.ios-banner{background:linear-gradient(135deg,rgba(234,179,8,.12),rgba(234,179,8,.05));
+  border:1px solid rgba(234,179,8,.3);border-radius:11px;padding:12px 14px;
+  margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;}
+.ios-banner-icon{font-size:24px;flex-shrink:0;}
+.ios-banner-text{font-size:12px;color:var(--muted2);line-height:1.5;flex:1;}
+.ios-banner-text b{color:var(--yellow);}
+.ios-banner-close{background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:2px;flex-shrink:0;}
+
+/* ── RESET PASSWORD MODAL ── */
+.reset-pass-row{display:flex;gap:8px;align-items:center;margin-top:8px;}
+.reset-pass-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:8px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;}
+.reset-pass-input:focus{border-color:var(--accent);}
+.reset-pass-btn{background:var(--accent);border:none;border-radius:8px;padding:8px 14px;
+  color:#fff;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;}
+
+/* ── PERMISSION MODAL ── */
+.perm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);backdrop-filter:blur(8px);
+  z-index:6000;display:none;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;text-align:center;}
+.perm-overlay.show{display:flex;}
+.perm-card{background:var(--surface);border:1px solid var(--border);border-radius:22px;
+  padding:36px 28px 28px;max-width:360px;width:100%;box-shadow:0 32px 64px rgba(0,0,8,.7);}
+.perm-icon{font-size:52px;margin-bottom:12px;}
+.perm-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:8px;}
+.perm-desc{font-size:13px;color:var(--muted2);line-height:1.6;margin-bottom:24px;}
+.perm-features{text-align:left;margin-bottom:24px;}
+.perm-feat{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:13px;color:var(--text);}
+.perm-feat-icon{font-size:18px;flex-shrink:0;}
+.perm-btn-group{display:flex;flex-direction:column;gap:8px;}
+.perm-btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;
+  border-radius:12px;padding:15px;color:#fff;font-family:'Syne',sans-serif;font-size:15px;
+  font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.perm-btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(30,77,183,.4);}
+.perm-btn-skip{background:none;border:1px solid var(--border);border-radius:10px;
+  padding:11px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;}
+
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
@@ -498,7 +536,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
     <div class="admin-card">
       <div class="sec-title">👥 All Members</div>
-      <div class="sec-sub">Change roles or remove members. Passwords shown for recovery purposes.</div>
+      <div class="sec-sub">Change roles, remove members, or reset passwords.</div>
       <div class="user-list-a" id="admin-user-list"></div>
     </div>
   </div>
@@ -675,6 +713,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <button class="alarm-stop-btn" type="button" onclick="stopAlarm()">Stop Alarm</button>
 </div>
 
+<!-- ═══ PERMISSION REQUEST MODAL ═══ -->
+<div class="perm-overlay" id="perm-overlay" role="dialog" aria-modal="true">
+  <div class="perm-card">
+    <div class="perm-icon">🔔</div>
+    <div class="perm-title">Enable Notifications & Sound</div>
+    <div class="perm-desc">FocusMithra needs your permission to send alarm sounds and reminders about pending work.</div>
+    <div class="perm-features">
+      <div class="perm-feat"><span class="perm-feat-icon">⏰</span><span>Alarm sounds for pending stock requests</span></div>
+      <div class="perm-feat"><span class="perm-feat-icon">📬</span><span>Alerts when new requests arrive</span></div>
+      <div class="perm-feat"><span class="perm-feat-icon">🔊</span><span>Sound notifications even in background</span></div>
+      <div class="perm-feat"><span class="perm-feat-icon">📳</span><span>Vibration alerts on mobile devices</span></div>
+    </div>
+    <div class="perm-btn-group">
+      <button class="perm-btn-primary" type="button" onclick="grantPermissions()">🔔 Enable Notifications & Sound</button>
+      <button class="perm-btn-skip" type="button" onclick="skipPermissions()">Maybe Later</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ LIGHTBOX ═══ -->
 <div class="lightbox" id="lightbox" onclick="closeLB()" role="dialog" aria-modal="true">
   <button class="lb-close" type="button" onclick="closeLB()" aria-label="Close">✕</button>
@@ -738,9 +795,71 @@ import { initializeApp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getDatabase, ref, set, get, update, remove, onValue, off }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import { getAuth, signInAnonymously, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getMessaging, getToken, onMessage }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js';
 
 const fbApp = initializeApp(FIREBASE_CONFIG);
 const db    = getDatabase(fbApp);
+const fbAuth = getAuth(fbApp);
+let messaging = null;
+try { messaging = getMessaging(fbApp); } catch(e) { console.warn('FCM not available:', e); }
+
+let firebaseUser = null;
+let authAvailable = true;
+const authReady = new Promise(resolve => {
+  onAuthStateChanged(fbAuth, user => {
+    firebaseUser = user || null;
+    resolve(user || null);
+  });
+});
+
+async function ensureFirebaseAuth() {
+  await authReady;
+  if (!firebaseUser) {
+    await signInAnonymously(fbAuth);
+  }
+}
+
+// ── Password hashing (SHA-256 + salt) ────────────────────────────────────
+const HASH_PREFIX = '$SHA256$';
+async function hashPassword(plainText, salt) {
+  if (!salt) salt = crypto.getRandomValues(new Uint8Array(16))
+    .reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
+  const data = new TextEncoder().encode(salt + ':' + plainText);
+  const buf  = await crypto.subtle.digest('SHA-256', data);
+  const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return HASH_PREFIX + salt + ':' + hash;
+}
+
+async function verifyPassword(plainText, stored) {
+  if (!stored) return false;
+  // Legacy: stored password is plain text (no hash prefix)
+  if (!stored.startsWith(HASH_PREFIX)) return plainText === stored;
+  // Hashed password: extract salt and compare
+  const body = stored.slice(HASH_PREFIX.length);
+  const colonIdx = body.indexOf(':');
+  if (colonIdx < 0) return false;
+  const salt = body.slice(0, colonIdx);
+  const expected = HASH_PREFIX + body;
+  const computed = await hashPassword(plainText, salt);
+  return computed === expected;
+}
+
+function isPasswordHashed(stored) {
+  return stored && stored.startsWith(HASH_PREFIX);
+}
+
+// Migrate a plain-text password to a hashed one in the DB
+async function migratePasswordIfNeeded(accountKey, stored) {
+  if (stored && !stored.startsWith(HASH_PREFIX)) {
+    const hashed = await hashPassword(stored);
+    await dbUpd('accounts/' + accountKey, { pass: hashed });
+    return hashed;
+  }
+  return stored;
+}
 
 // ── Firebase key safety ──────────────────────────────────────────────────
 // Firebase keys cannot contain: . # $ [ ] /
@@ -784,6 +903,8 @@ let isFirstReqFetch  = true;   // prevents notification flood on first load
 
 const SESS_KEY  = 'fm_v5_session';
 const NOTIF_KEY = 'fm_v5_notifs';
+const PERM_KEY  = 'fm_v5_perm_asked';
+let wakeLock    = null;
 
 const saveSession  = name => { try { localStorage.setItem(SESS_KEY, name); } catch(e) {} };
 const loadSession  = ()   => { try { return localStorage.getItem(SESS_KEY); } catch(e) { return null; } };
@@ -799,17 +920,28 @@ window.addEventListener('DOMContentLoaded', async () => {
   watchOnline();
   notifications = loadNotifs();
 
+  try {
+    await ensureFirebaseAuth();
+  } catch(e) {
+    authAvailable = false;
+    console.warn('Firebase Auth unavailable, continuing in compatibility mode:', e);
+  }
+
   // Seed default admin if DB is completely empty
   try {
     const existing = await dbGet('accounts');
     if (!existing) {
+      const hashedAdminPass = await hashPassword('admin123');
       await dbSet('accounts/' + safeKey('Admin'), {
-        pass: 'admin123', role: 'admin', displayName: 'Admin'
+        pass: hashedAdminPass, role: 'admin', displayName: 'Admin'
       });
     }
   } catch(e) {
     showLoading(false);
-    showFatalError('Cannot reach Firebase database.<br>Check your internet connection and Firebase config.<br><br><code>' + escHtml(e.message) + '</code>');
+    const authHint = !authAvailable
+      ? '<br><br><b>Note:</b> Anonymous Auth is disabled. Either enable it in Firebase Console, or use non-auth database rules.'
+      : '';
+    showFatalError('Cannot reach Firebase database.<br>Check your internet connection and Firebase config.' + authHint + '<br><br><code>' + escHtml(e.message) + '</code>');
     return;
   }
 
@@ -867,6 +999,9 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   bootDone = true;
   showLoading(false);
+  if (!authAvailable) {
+    toast('⚠️ Anonymous Auth is disabled. App is running in compatibility mode.', '#eab308');
+  }
   showLogin();
 });
 
@@ -912,6 +1047,8 @@ function launchApp() {
   openPage('home');
   renderAll();
   initPush();
+  initFCM();
+  showIOSBanner();
 }
 
 function updateRoleChip() {
@@ -972,13 +1109,17 @@ window.doLogin = async function() {
       document.getElementById('ln').focus();
       return;
     }
-    if (acc.pass !== pass) {
+    const passMatch = await verifyPassword(pass, acc.pass);
+    if (!passMatch) {
       toast('❌ Wrong password', '#ef4444');
       btn.disabled = false; btn.textContent = 'Sign In →';
       document.getElementById('lp').value = '';
       document.getElementById('lp').focus();
       return;
     }
+
+    // Migrate plain-text password to hashed on successful login
+    migratePasswordIfNeeded(key, acc.pass).catch(() => {});
 
     // Successful login
     currentUser = { name: nameRaw, role: acc.role };
@@ -1667,6 +1808,64 @@ function playSoundType(type) {
   }
 }
 
+// ── Audio element fallback for alarm ─────────────────────────────────────
+// Generates a short WAV alarm tone at runtime — works on devices where
+// Web Audio API gets suspended in background (especially iOS/Android).
+let alarmAudioEl = null;
+function getAlarmAudioElement() {
+  if (alarmAudioEl) return alarmAudioEl;
+  // Generate a 1-second 880Hz square-wave WAV (PCM 16-bit, 22050Hz)
+  const sampleRate = 22050, duration = 1.0, freq = 880;
+  const numSamples = Math.floor(sampleRate * duration);
+  const buffer = new ArrayBuffer(44 + numSamples * 2);
+  const view = new DataView(buffer);
+  // WAV header
+  const writeStr = (offset, str) => { for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)); };
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + numSamples * 2, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);      // chunk size
+  view.setUint16(20, 1, true);       // PCM
+  view.setUint16(22, 1, true);       // mono
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true); // byte rate
+  view.setUint16(32, 2, true);       // block align
+  view.setUint16(34, 16, true);      // bits per sample
+  writeStr(36, 'data');
+  view.setUint32(40, numSamples * 2, true);
+  // Generate square wave with envelope
+  for (let i = 0; i < numSamples; i++) {
+    const t = i / sampleRate;
+    const envelope = Math.min(1, Math.min(t / 0.01, (duration - t) / 0.05)); // attack/release
+    const sample = ((t * freq) % 1 < 0.5 ? 1 : -1) * 0.7 * envelope;
+    view.setInt16(44 + i * 2, Math.max(-32768, Math.min(32767, Math.floor(sample * 32767))), true);
+  }
+  const blob = new Blob([buffer], { type: 'audio/wav' });
+  const url = URL.createObjectURL(blob);
+  alarmAudioEl = new Audio(url);
+  alarmAudioEl.loop = true;
+  alarmAudioEl.volume = 1.0;
+  return alarmAudioEl;
+}
+
+function playAlarmAudioFallback() {
+  try {
+    const audio = getAlarmAudioElement();
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  } catch(e) {}
+}
+
+function stopAlarmAudioFallback() {
+  try {
+    if (alarmAudioEl) {
+      alarmAudioEl.pause();
+      alarmAudioEl.currentTime = 0;
+    }
+  } catch(e) {}
+}
+
 function ringAlarm(req) {
   if (alarmRinging) return;
   alarmRinging = true;
@@ -1674,8 +1873,22 @@ function ringAlarm(req) {
   msg.textContent = `"${req.item}" needs attention!\nRequested by ${req.by}`;
   document.getElementById('alarm-overlay').classList.add('ringing');
   playSoundType(req.alarm?.sound || 'beep');
+  playAlarmAudioFallback(); // HTML Audio fallback for background/locked screens
+
+  // Send system notification (works even when app is in background)
+  sendAlarmNotification(req);
+
+  // Vibrate device for attention
+  if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500, 200, 500]);
+
+  // Keep screen awake while alarm is ringing
+  requestWakeLock();
+
   alarmRingInterval = setInterval(() => {
-    if (alarmRinging) playSoundType(req.alarm?.sound || 'beep');
+    if (alarmRinging) {
+      playSoundType(req.alarm?.sound || 'beep');
+      if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
+    }
   }, 3000);
 }
 
@@ -1684,7 +1897,56 @@ window.stopAlarm = function() {
   clearInterval(alarmRingInterval);
   alarmRingInterval = null;
   document.getElementById('alarm-overlay').classList.remove('ringing');
+  stopAlarmAudioFallback(); // stop HTML Audio fallback
+  // Stop vibration
+  if (navigator.vibrate) navigator.vibrate(0);
+  // Release screen wake lock
+  releaseWakeLock();
 };
+
+// ── System notification for alarms ───────────────────────────────────────
+function sendAlarmNotification(req) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const itemLabel = Array.isArray(req.items) && req.items.length
+    ? req.items.join(', ') : (req.item || 'Stock Request');
+  // Prefer service worker notification (works in background on Android)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.showNotification('⚠️ Stock Request Pending!', {
+        body: `"${itemLabel}" needs attention!\nRequested by ${req.by}`,
+        icon: '/icon-192.png',
+        badge: '/icon-96.png',
+        tag: 'fm-alarm-' + req.id,
+        renotify: true,
+        requireInteraction: true,
+        vibrate: [500, 200, 500, 200, 500]
+      });
+    }).catch(() => {});
+  } else {
+    try {
+      new Notification('⚠️ Stock Request Pending!', {
+        body: `"${itemLabel}" needs attention! Requested by ${req.by}`,
+        icon: '/icon-192.png',
+        tag: 'fm-alarm-' + req.id
+      });
+    } catch(e) {}
+  }
+}
+
+// ── Wake Lock — keep screen on during alarm ──────────────────────────────
+async function requestWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+  } catch(e) { /* Wake lock not available or failed */ }
+}
+
+function releaseWakeLock() {
+  if (wakeLock) {
+    wakeLock.release().catch(() => {});
+    wakeLock = null;
+  }
+}
 
 window.openAlarmModal = function(id) {
   const req = requests[id];
@@ -1763,8 +2025,28 @@ function startReminderTimer(req) {
     if (!live || live.status === 'completed') {
       clearInterval(reminderTimers[req.id]); delete reminderTimers[req.id];
     }
-    // (push notification could be triggered here in future)
+    // Send system notification as reminder
+    if (live && live.status !== 'completed') sendReminderNotification(live);
   }, ms);
+}
+
+function sendReminderNotification(req) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (document.visibilityState === 'visible') return; // only notify when app is in background
+  const itemLabel = Array.isArray(req.items) && req.items.length
+    ? req.items.join(', ') : (req.item || 'Stock Request');
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.showNotification('⏰ Reminder: ' + itemLabel, {
+        body: `Request from ${req.by} is still ${req.status}`,
+        icon: '/icon-192.png',
+        badge: '/icon-96.png',
+        tag: 'fm-remind-' + req.id,
+        renotify: true,
+        vibrate: [300, 100, 300]
+      });
+    }).catch(() => {});
+  }
 }
 
 function restartTimers() {
@@ -1805,7 +2087,8 @@ window.addMember = async function() {
   try {
     const existing = await dbGet('accounts/' + key);
     if (existing) { toast('⚠️ A member with this name already exists', '#ef4444'); return; }
-    await dbSet('accounts/' + key, { pass, role, displayName: name });
+    const hashedPass = await hashPassword(pass);
+    await dbSet('accounts/' + key, { pass: hashedPass, role, displayName: name });
     document.getElementById('am-name').value = '';
     document.getElementById('am-pass').value = '';
     toast(`✅ ${name} added as ${role}`, '#22c55e');
@@ -1861,12 +2144,17 @@ function renderAdminPage() {
     const displayName = a.displayName || fromKey(key);
     const isMe = key === safeKey(currentUser.name) || displayName === currentUser.name;
     const role = a.role || 'unassigned';
+    const passHidden = isPasswordHashed(a.pass) ? '••••••••' : '⚠️ unhashed (will migrate on next login)';
     return `<div class="user-row-a">
       <div class="u-info">
         <div class="u-name">${roleEmoji[role] || '👤'} ${escHtml(displayName)}${isMe ? ' <span style="font-size:10px;color:var(--muted)">(you)</span>' : ''}</div>
         <div class="u-meta">
           <span class="badge role-tag rt-${role}">${roleLabel[role] || role}</span>
-          <span title="password">🔑 ${escHtml(a.pass)}</span>
+          <span title="password is hashed">🔑 ${passHidden}</span>
+        </div>
+        <div class="reset-pass-row" id="reset-row-${escAttr(key)}" style="display:none">
+          <input class="reset-pass-input" id="reset-input-${escAttr(key)}" placeholder="New password (min 4 chars)" maxlength="50" />
+          <button class="reset-pass-btn" type="button" data-key="${escAttr(key)}" data-name="${escAttr(displayName)}" onclick="confirmResetPass(this)">Save</button>
         </div>
       </div>
       <div class="u-actions">
@@ -1877,6 +2165,7 @@ function renderAdminPage() {
           <option value="admin"      ${role==='admin'      ?'selected':''}>⚙️ Admin</option>
           <option value="unassigned" ${role==='unassigned' ?'selected':''}>❓ Unassigned</option>
         </select>
+        <button class="del-btn" type="button" data-key="${escAttr(key)}" onclick="toggleResetPass(this)" title="Reset password" style="color:var(--accentl);border-color:rgba(59,130,246,.3)">🔑</button>
         ${!isMe
           ? `<button class="del-btn" type="button" data-key="${escAttr(key)}" data-name="${escAttr(displayName)}" onclick="removeMember(this)">🗑</button>`
           : ''}
@@ -1884,6 +2173,43 @@ function renderAdminPage() {
     </div>`;
   }).join('');
 }
+
+window.toggleResetPass = function(btn) {
+  const key = btn.dataset.key;
+  const row = document.getElementById('reset-row-' + key);
+  if (!row) return;
+  const showing = row.style.display !== 'none';
+  row.style.display = showing ? 'none' : 'flex';
+  if (!showing) {
+    const input = document.getElementById('reset-input-' + key);
+    if (input) { input.value = ''; input.focus(); }
+  }
+};
+
+window.confirmResetPass = async function(btn) {
+  const key  = btn.dataset.key;
+  const name = btn.dataset.name;
+  const input = document.getElementById('reset-input-' + key);
+  const newPass = input?.value?.trim();
+  if (!newPass || newPass.length < 4) {
+    toast('⚠️ Password must be at least 4 characters', '#ef4444');
+    if (input) input.focus();
+    return;
+  }
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    const hashed = await hashPassword(newPass);
+    await dbUpd('accounts/' + key, { pass: hashed });
+    toast(`🔑 Password reset for ${name}`, '#22c55e');
+    const row = document.getElementById('reset-row-' + key);
+    if (row) row.style.display = 'none';
+  } catch(e) {
+    console.error('resetPass:', e);
+    toast('❌ Error resetting password', '#ef4444');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save';
+  }
+};
 
 // ═══════════════════════════════════════════════════════════════════════
 // NOTIFICATIONS
@@ -1965,9 +2291,11 @@ function detectNewRequests(oldReqs, newReqs) {
         addNotif('📦', `New request: "${req.item}" from ${req.by}`);
         playNotifSound('new');
         toast(`📦 New request from ${req.by}: "${req.item}"`, '#3b82f6');
+        sendEventNotification('📦 New Stock Request', `"${req.item}" from ${req.by}`, 'fm-new-' + req.id);
       } else if (currentUser.role === 'admin') {
         addNotif('📦', `New: "${req.item}" — ${req.by} → ${req.to}`);
         playNotifSound('new');
+        sendEventNotification('📦 New Request', `"${req.item}" — ${req.by} → ${req.to}`, 'fm-new-' + req.id);
       }
     } else if (old.status !== req.status) {
       // Status change
@@ -1975,11 +2303,13 @@ function detectNewRequests(oldReqs, newReqs) {
         addNotif('👀', `"${req.item}" accepted by ${req.acceptedBy || 'senior'}`);
         playNotifSound('accepted');
         toast(`👀 "${req.item}" accepted by ${req.acceptedBy || 'senior'}`, '#818cf8');
+        sendEventNotification('👀 Request Accepted', `"${req.item}" accepted by ${req.acceptedBy || 'senior'}`, 'fm-accepted-' + req.id);
       }
       if (req.status === 'completed' && currentUser.role === 'worker' && req.by === currentUser.name) {
         addNotif('✅', `"${req.item}" is completed!`);
         playNotifSound('completed');
         toast(`✅ "${req.item}" has been completed!`, '#22c55e');
+        sendEventNotification('✅ Request Completed!', `"${req.item}" has been completed!`, 'fm-completed-' + req.id);
       }
     } else if (old.to !== req.to) {
       // Reassigned
@@ -1987,6 +2317,7 @@ function detectNewRequests(oldReqs, newReqs) {
         addNotif('🔀', `Request reassigned to you: "${req.item}" from ${req.by}`);
         playNotifSound('reassign');
         toast(`🔀 Request reassigned to you: "${req.item}"`, '#a855f7');
+        sendEventNotification('🔀 Request Reassigned', `"${req.item}" from ${req.by} assigned to you`, 'fm-reassign-' + req.id);
       }
     }
   });
@@ -2028,13 +2359,89 @@ window.clearNotifs = function() {
   renderNotifList();
 };
 
+// ── Send system notification for events ──────────────────────────────────
+function sendEventNotification(title, body, tag) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.showNotification(title, {
+        body, icon: '/icon-192.png', badge: '/icon-96.png',
+        tag, renotify: true, vibrate: [200, 100, 200]
+      });
+    }).catch(() => {});
+  } else {
+    try { new Notification(title, { body, icon: '/icon-192.png', tag }); } catch(e) {}
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // PUSH NOTIFICATIONS
 // ═══════════════════════════════════════════════════════════════════════
 function initPush() {
   if (!('Notification' in window)) return;
-  if (Notification.permission === 'default') renderPushBanner();
+  if (Notification.permission === 'default') {
+    // Show full permission modal on first time, subtle banner afterwards
+    try {
+      if (!localStorage.getItem(PERM_KEY)) {
+        showPermissionModal();
+        return;
+      }
+    } catch(e) {}
+    renderPushBanner();
+  }
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// PERMISSION REQUEST
+// ═══════════════════════════════════════════════════════════════════════
+function showPermissionModal() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'default') return;
+  try { if (localStorage.getItem(PERM_KEY)) return; } catch(e) {}
+  document.getElementById('perm-overlay').classList.add('show');
+}
+
+window.grantPermissions = async function() {
+  try {
+    const result = await Notification.requestPermission();
+    if (result === 'granted') {
+      toast('🔔 Notifications & sound enabled!', '#22c55e');
+      // Send a welcome notification
+      try {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          const reg = await navigator.serviceWorker.ready;
+          reg.showNotification('FocusMithra', {
+            body: 'Alarm sounds and reminders are now active!',
+            icon: '/icon-192.png',
+            badge: '/icon-96.png',
+            tag: 'fm-perm-granted',
+            vibrate: [200, 100, 200]
+          });
+        } else {
+          new Notification('FocusMithra', {
+            body: 'Alarm sounds and reminders are now active!',
+            icon: '/icon-192.png'
+          });
+        }
+      } catch(e) {}
+    } else {
+      toast('ℹ️ You can enable notifications later in Settings', '#64748b');
+    }
+  } catch(e) {
+    console.warn('Permission request error:', e);
+  }
+  // Unlock audio context on this user gesture
+  unlockAudio();
+  try { localStorage.setItem(PERM_KEY, '1'); } catch(e) {}
+  document.getElementById('perm-overlay').classList.remove('show');
+  const banner = document.getElementById('push-banner-area');
+  if (banner) banner.innerHTML = '';
+};
+
+window.skipPermissions = function() {
+  try { localStorage.setItem(PERM_KEY, '1'); } catch(e) {}
+  document.getElementById('perm-overlay').classList.remove('show');
+};
 
 function renderPushBanner() {
   const el = document.getElementById('push-banner-area');
@@ -2064,6 +2471,102 @@ window.reqPush = function() {
     const el = document.getElementById('push-banner-area');
     if (el) el.innerHTML = '';
   });
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// FCM (Firebase Cloud Messaging) — client-side token registration
+// ═══════════════════════════════════════════════════════════════════════
+async function initFCM() {
+  if (!messaging) return;
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    // Get FCM token — requires a VAPID key from Firebase Console > Cloud Messaging
+    // To enable: go to Firebase Console > Project Settings > Cloud Messaging > Web Push Certificates
+    // Generate a key pair and paste the public key below
+    const VAPID_KEY = ''; // TODO: paste your VAPID public key here
+    if (!VAPID_KEY) return; // Skip FCM until VAPID key is configured
+
+    const swReg = await navigator.serviceWorker.ready;
+    const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+    if (token && currentUser) {
+      // Store the FCM token in the user's account record
+      const key = safeKey(currentUser.name);
+      await dbUpd('accounts/' + key, { fcmToken: token });
+    }
+    // Handle foreground messages from FCM
+    onMessage(messaging, payload => {
+      const title = payload.notification?.title || 'FocusMithra';
+      const body  = payload.notification?.body  || '';
+      if (body) {
+        addNotif('📬', body);
+        toast(`📬 ${body}`, '#3b82f6');
+        playNotifSound('new');
+      }
+    });
+  } catch(e) {
+    console.warn('FCM init error:', e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// iOS PWA NOTIFICATION BANNER
+// ═══════════════════════════════════════════════════════════════════════
+function showIOSBanner() {
+  // Detect iOS (iPhone/iPad)
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (!isIOS) return;
+
+  // Check if running as installed PWA
+  const isStandalone = window.navigator.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches;
+
+  const bannerArea = document.getElementById('push-banner-area');
+  if (!bannerArea) return;
+
+  // Don't show if already dismissed
+  try { if (localStorage.getItem('fm_ios_banner_dismissed')) return; } catch(e) {}
+
+  // Check iOS version for Web Push support (16.4+)
+  const iosMatch = navigator.userAgent.match(/OS (\d+)_(\d+)/);
+  const iosMajor = iosMatch ? parseInt(iosMatch[1]) : 0;
+  const supportsWebPush = iosMajor >= 16;
+
+  let bannerHtml = '';
+  if (!isStandalone) {
+    // Not installed as PWA — prompt to install
+    bannerHtml = `<div class="ios-banner">
+      <div class="ios-banner-icon">📲</div>
+      <div class="ios-banner-text">
+        <b>Install FocusMithra</b> for the best experience with alarms & notifications.<br>
+        Tap <b>Share ↗</b> → <b>"Add to Home Screen"</b> in Safari.
+      </div>
+      <button class="ios-banner-close" type="button" onclick="dismissIOSBanner(this)">✕</button>
+    </div>`;
+  } else if (!supportsWebPush) {
+    // Installed but iOS < 16.4 — no Web Push support
+    bannerHtml = `<div class="ios-banner">
+      <div class="ios-banner-icon">⚠️</div>
+      <div class="ios-banner-text">
+        <b>iOS ${iosMajor} detected.</b> Push notifications require iOS 16.4+.
+        Update your device for full alarm & notification support.
+        In-app alarms still work when the app is open.
+      </div>
+      <button class="ios-banner-close" type="button" onclick="dismissIOSBanner(this)">✕</button>
+    </div>`;
+  }
+  // If iOS 16.4+ and installed, notifications work fine — no banner needed
+
+  if (bannerHtml) {
+    // Prepend to the banner area (don't replace push banner)
+    bannerArea.insertAdjacentHTML('afterbegin', bannerHtml);
+  }
+}
+
+window.dismissIOSBanner = function(btn) {
+  const banner = btn.closest('.ios-banner');
+  if (banner) banner.remove();
+  try { localStorage.setItem('fm_ios_banner_dismissed', '1'); } catch(e) {}
 };
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -2136,6 +2639,23 @@ function escHtml(s) {
 
 function escAttr(s) { return escHtml(s); }
 
+// ── Background / foreground handling ─────────────────────────────────────
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    // App came back to foreground — restart timers that may have been throttled
+    if (currentUser && bootDone) restartTimers();
+    // Resume audio context (may have been suspended by OS)
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+  }
+});
+
+// Re-acquire wake lock if it was released by OS (e.g. screen timeout during alarm)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && alarmRinging && !wakeLock) {
+    requestWakeLock();
+  }
+});
+
 // ── Keyboard shortcuts ───────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
@@ -2166,6 +2686,16 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(e => {
       console.warn('SW registration failed:', e);
     });
+  });
+  // Handle notification click messages from service worker
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type === 'notification-click') {
+      const tag = event.data.tag || '';
+      // If it's an alarm notification, stop the alarm
+      if (tag.startsWith('fm-alarm-') && typeof window.stopAlarm === 'function') {
+        window.stopAlarm();
+      }
+    }
   });
 }
 </script>

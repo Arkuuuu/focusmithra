@@ -1,0 +1,108 @@
+{
+  "rules": {
+    "accounts": {
+      ".read": true,
+      "$uid": {
+        ".read": true,
+        ".write": true,
+        ".validate": "newData.hasChildren(['pass', 'role', 'displayName'])",
+        "pass": {
+          ".validate": "newData.isString() && (newData.val().matches(/^\\$SHA256\\$.+/) || (data.exists() && newData.val() === data.val()))"
+        },
+        "role": {
+          ".validate": "newData.isString() && (newData.val() === 'worker' || newData.val() === 'senior' || newData.val() === 'admin' || newData.val() === 'unassigned')"
+        },
+        "displayName": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 60"
+        },
+        "fcmToken": {
+          ".validate": "!newData.exists() || newData.isString()"
+        }
+      }
+    },
+    "requests": {
+      ".read": true,
+      "$reqId": {
+        ".write": "newData.exists() || data.exists()",
+        ".validate": "!newData.exists() || (newData.hasChildren(['id', 'ts', 'by', 'to', 'status', 'priority']) && newData.child('id').isString() && newData.child('id').val() === $reqId && (!data.exists() || (newData.child('id').val() === data.child('id').val() && newData.child('ts').val() === data.child('ts').val() && newData.child('by').val() === data.child('by').val())) && ((!data.exists() && newData.child('status').val() === 'pending') || (data.exists() && ((data.child('status').val() === 'pending' && (newData.child('status').val() === 'pending' || newData.child('status').val() === 'accepted' || newData.child('status').val() === 'completed')) || (data.child('status').val() === 'accepted' && (newData.child('status').val() === 'accepted' || newData.child('status').val() === 'completed')) || (data.child('status').val() === 'completed' && newData.child('status').val() === 'completed')))))",
+        "id": {
+          ".validate": "newData.isString()"
+        },
+        "ts": {
+          ".validate": "newData.isNumber() && newData.val() > 0"
+        },
+        "by": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 60"
+        },
+        "to": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 60"
+        },
+        "status": {
+          ".validate": "newData.isString() && (newData.val() === 'pending' || newData.val() === 'accepted' || newData.val() === 'completed')"
+        },
+        "priority": {
+          ".validate": "newData.isString() && (newData.val() === 'low' || newData.val() === 'medium' || newData.val() === 'high')"
+        },
+        "item": {
+          ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 120)"
+        },
+        "items": {
+          "$idx": {
+            ".validate": "newData.isString() && newData.val().length <= 120"
+          }
+        },
+        "notes": {
+          ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 500)"
+        },
+        "freq": {
+          ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 1 && newData.val() <= 59940)"
+        },
+        "freqUnit": {
+          ".validate": "!newData.exists() || (newData.isString() && (newData.val() === 'min' || newData.val() === 'hr'))"
+        },
+        "image": {
+          ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 600000)"
+        },
+        "alarm": {
+          ".validate": "!newData.exists() || newData.hasChild('enabled')",
+          "enabled": {
+            ".validate": "!newData.exists() || newData.isBoolean()"
+          },
+          "sound": {
+            ".validate": "!newData.exists() || (newData.isString() && (newData.val() === 'beep' || newData.val() === 'alert' || newData.val() === 'chime'))"
+          },
+          "freq": {
+            ".validate": "!newData.exists() || newData.isNumber()"
+          },
+          "freqUnit": {
+            ".validate": "!newData.exists() || newData.isString()"
+          },
+          "freqVal": {
+            ".validate": "!newData.exists() || newData.isNumber()"
+          }
+        },
+        "isSelfRemind": {
+          ".validate": "!newData.exists() || newData.isBoolean()"
+        },
+        "seenBy": {
+          "$user": {
+            ".validate": "newData.isNumber()"
+          }
+        },
+        "acceptedBy": {
+          ".validate": "!newData.exists() || newData.isString()"
+        },
+        "completedBy": {
+          ".validate": "!newData.exists() || newData.isString()"
+        },
+        "completedAt": {
+          ".validate": "!newData.exists() || newData.isNumber()"
+        }
+      }
+    },
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}

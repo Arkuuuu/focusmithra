@@ -1,6 +1,6 @@
-// FocusMithra Service Worker — v6
+// FocusMithra Service Worker — v8
 // Bump this version string whenever you deploy a new build
-const CACHE_NAME = 'focusmithra-v6';
+const CACHE_NAME = 'focusmithra-v8';
 const CORE_ASSETS = [
   '/',
   '/index.html',
@@ -110,11 +110,14 @@ self.addEventListener('push', event => {
 // ── Notification click: focus or open app ─────────────────────────────
 self.addEventListener('notificationclick', event => {
   event.notification.close();
+  // Stop alarm sound if notification was an alarm
+  const tag = event.notification.tag || '';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-      // If app is already open, focus it
+      // If app is already open, focus it and notify about the click
       for (const client of list) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.postMessage({ type: 'notification-click', tag });
           return client.focus();
         }
       }
