@@ -4,9 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>FocusMithra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1e4db7">
+<meta name="description" content="FocusMithra — Stock request management system for teams. Raise, track, and complete stock orders in real time.">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -418,7 +421,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div id="page-admin" class="page">
     <div class="admin-card">
       <div class="sec-title">➕ Add New Member</div>
-      <div class="sec-sub">Create a login for a new employee. Default admin login: <b>Admin / admin123</b> — change it after first login.</div>
+      <div class="sec-sub">Create a login for a new employee.</div>
       <div class="add-row">
         <div>
           <label class="f-label" for="am-name">Full Name</label>
@@ -676,6 +679,11 @@ let alarmRingInterval = null;
 let bootDone         = false;  // prevents live-listener side effects during boot
 let isFirstReqFetch  = true;   // prevents notification flood on first load
 
+let loginAttempts    = 0;
+let loginLockUntil   = 0;
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOGIN_LOCK_MS      = 30_000; // 30 seconds
+
 const SESS_KEY  = 'fm_v5_session';
 const NOTIF_KEY = 'fm_v5_notifs';
 
@@ -848,6 +856,13 @@ window.togglePass = function() {
 };
 
 window.doLogin = async function() {
+  // Rate limiting
+  if (Date.now() < loginLockUntil) {
+    const secs = Math.ceil((loginLockUntil - Date.now()) / 1000);
+    toast(`⏳ Too many attempts — wait ${secs}s`, '#ef4444');
+    return;
+  }
+
   const nameRaw = document.getElementById('ln').value.trim();
   const pass    = document.getElementById('lp').value;   // don't trim — password may have spaces
   if (!nameRaw) { toast('⚠️ Enter your name', '#ef4444'); document.getElementById('ln').focus(); return; }
@@ -861,12 +876,16 @@ window.doLogin = async function() {
     const acc = await dbGet('accounts/' + key);
 
     if (!acc) {
+      loginAttempts++;
+      if (loginAttempts >= MAX_LOGIN_ATTEMPTS) { loginLockUntil = Date.now() + LOGIN_LOCK_MS; loginAttempts = 0; }
       toast('❌ Account not found — ask your Admin', '#ef4444');
       btn.disabled = false; btn.textContent = 'Sign In →';
       document.getElementById('ln').focus();
       return;
     }
     if (acc.pass !== pass) {
+      loginAttempts++;
+      if (loginAttempts >= MAX_LOGIN_ATTEMPTS) { loginLockUntil = Date.now() + LOGIN_LOCK_MS; loginAttempts = 0; }
       toast('❌ Wrong password', '#ef4444');
       btn.disabled = false; btn.textContent = 'Sign In →';
       document.getElementById('lp').value = '';
@@ -875,6 +894,7 @@ window.doLogin = async function() {
     }
 
     // Successful login
+    loginAttempts = 0;
     currentUser = { name: nameRaw, role: acc.role };
     saveSession(nameRaw);
     isFirstReqFetch = true; // reset so notif flood doesn't happen
@@ -1226,6 +1246,7 @@ window.cancelReq = async function(id) {
 };
 
 window.delReq = async function(id) {
+  if (!confirm('Delete this request? This cannot be undone.')) return;
   stopTimersForId(id);
   try {
     await dbDel('requests/' + id);
@@ -1496,6 +1517,14 @@ window.changeRole = async function(btn) {
   }
 };
 
+window.togglePassView = function(btn) {
+  const mask = btn.previousElementSibling;
+  if (!mask) return;
+  const revealed = mask.textContent !== '••••';
+  mask.textContent = revealed ? '••••' : mask.dataset.pass;
+  btn.textContent = revealed ? 'Show' : 'Hide';
+};
+
 window.removeMember = async function(btn) {
   const key  = btn.dataset.key;
   const name = btn.dataset.name;
@@ -1530,7 +1559,7 @@ function renderAdminPage() {
         <div class="u-name">${roleEmoji[role] || '👤'} ${escHtml(displayName)}${isMe ? ' <span style="font-size:10px;color:var(--muted)">(you)</span>' : ''}</div>
         <div class="u-meta">
           <span class="badge role-tag rt-${role}">${roleLabel[role] || role}</span>
-          <span title="password">🔑 ${escHtml(a.pass)}</span>
+          <span title="password">🔑 <span class="pass-mask" data-pass="${escAttr(a.pass)}">••••</span> <button class="del-btn" type="button" style="padding:2px 6px;font-size:10px" onclick="togglePassView(this)">Show</button></span>
         </div>
       </div>
       <div class="u-actions">

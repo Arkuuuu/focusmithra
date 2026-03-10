@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate HTML
+        uses: anishathalye/proof-html@v2
+        with:
+          directory: .
+          check_html: true
+          check_img_http: true
+
+      - name: Check manifest.json is valid JSON
+        run: python -m json.tool manifest.json > /dev/null
+
+      - name: Check vercel.json is valid JSON
+        run: python -m json.tool vercel.json > /dev/null
+
+      - name: Check for common security issues
+        run: |
+          echo "Checking for REPLACE_ placeholders in config..."
+          if grep -q 'REPLACE_' index.html; then
+            echo "WARNING: Found REPLACE_ placeholders - Firebase config may not be set"
+          else
+            echo "OK: No placeholder values found"
+          fi
+
+      - name: Verify PWA assets exist
+        run: |
+          for file in manifest.json sw.js logo.png icon-192.png icon-512.png; do
+            if [ ! -f "$file" ]; then
+              echo "MISSING: $file"
+              exit 1
+            fi
+          done
+          echo "All PWA assets present"
